@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">MoviePlayerPlus</string>
+    <string name="app_player">Player</string>
+    <string name="action_about">关  于</string>
+    <string name="no_video">没有视频资源!</string>
+    <string name="msg_end">已经到头了!</string>
+    <string name="msg_buffering">正在缓冲..%1$s</string>
+    <string name="play_error">播放出错!</string>
+    <string name="time">00:00:00</string>
+    <string name="prompt">提示</string>
+    <string name="tip_play_position">是否从记录点开始播放?</string>
+    <string name="yes">是</string>
+    <string name="no">否</string>
+    <string name="comfirm">确定</string>
+    <string name="cancel">取消</string>
+    <string name="title_activity_main">播放器Demo</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    
+    <string name="settings">设置</string>
+    <string name="recoder_setting">解码器：</string>
+    <string name="opencore">默认</string>
+    <string name="vlc">VLC</string>
+
+</resources>
