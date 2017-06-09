@@ -3,6 +3,16 @@
 	android:orientation="horizontal" 
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
+	<!--<android.support.v7.widget.Toolbar
+		android:id="@+id/toolbar"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content">
+		&lt;!&ndash;<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="标题"
+			android:textSize="20sp"/>&ndash;&gt;
+	</android.support.v7.widget.Toolbar>-->
 	<ListView 
 	    android:id="@+id/player_list"
 	    android:layout_width="match_parent"

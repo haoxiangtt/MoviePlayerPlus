@@ -27,7 +27,7 @@
         <activity
             android:name=".PlayerListActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -39,7 +39,7 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/app_player"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+            android:theme="@style/AppNotTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

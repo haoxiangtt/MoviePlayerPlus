@@ -13,14 +13,14 @@
 	        	android:layout_width="match_parent"
 	        	android:layout_height="match_parent"
 	        	android:visibility="gone"/>
+		   <com.bfy.view.VLCVideoView
+			   android:id="@+id/pv_video"
+			   android:layout_width="match_parent"
+			   android:layout_height="match_parent"
+			   android:visibility="gone"/>
 	    </FrameLayout>
 	    
-	    <com.bfy.view.PlayerView 
-	        android:id="@+id/pv_video"
-        	android:layout_width="match_parent"
-        	android:layout_height="match_parent"
-        	/>
-	    
+
 		<!-- 标题栏 -->
 	   <RelativeLayout 
 	        android:id="@+id/title_bar"

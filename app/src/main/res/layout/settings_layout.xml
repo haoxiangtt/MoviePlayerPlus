@@ -12,6 +12,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:textSize="20sp"
+			android:textColor="@android:color/white"
             android:text="@string/recoder_setting"/>
 	    <RadioGroup 
 	        android:id="@+id/setting_rb_group"
@@ -27,6 +28,7 @@
 	            android:layout_height="wrap_content"
 	            android:checked="true"
 	            android:text="@string/opencore"
+				android:textColor="@android:color/white"
 	            android:textSize="20sp" />
 	
 	         <RadioButton 
@@ -36,6 +38,7 @@
 		            android:layout_marginLeft="20dip"
 		            android:checked="false"
 		            android:textSize="20sp"
+				 android:textColor="@android:color/white"
 	          		android:text="@string/vlc"/>
 	      
 	    </RadioGroup>

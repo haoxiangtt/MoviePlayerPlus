@@ -1,8 +1,6 @@
 package com.bfy.movieplayerplus;
 
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +19,8 @@ import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.RadioGroup;
@@ -52,6 +52,8 @@ public class PlayerListActivity extends Activity implements OnItemClickListener{
 	SimpleAdapter adapter;
 	
 	List<Map<String,String>> data;
+
+//	Toolbar mToolbar;
 	
 	
 	private void init() {
@@ -108,6 +110,13 @@ public class PlayerListActivity extends Activity implements OnItemClickListener{
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_player_list);
+//		mToolbar = (Toolbar) findViewById(R.id.toolbar);
+//		mToolbar.setTitle("播放列表");
+//		//设置导航图标要在setSupportActionBar方法之后
+//		setSupportActionBar(mToolbar);
+//		ActionBar actionBar = getSupportActionBar();
+//		actionBar.setDisplayHomeAsUpEnabled(true);
+//		actionBar.setDisplayShowHomeEnabled(true);
 		init();
 	}
 	
@@ -153,7 +162,6 @@ public class PlayerListActivity extends Activity implements OnItemClickListener{
 		switch (id) {
 			case MENU_ACTION_ABOUT:{
 				AlertDialog d = new AlertDialog.Builder(this).create();
-				
 				d.setView(getLayoutInflater().inflate(R.layout.about_layout,null), 0, 0, 0, 0);
 				
 				return d;
@@ -191,9 +199,12 @@ public class PlayerListActivity extends Activity implements OnItemClickListener{
 
 	@Override
 	protected void onPrepareDialog(int id, Dialog dialog) {
-		
+		Window window = dialog.getWindow();
+		WindowManager.LayoutParams lp = window.getAttributes();
+		lp.width = window.getWindowManager().getDefaultDisplay().getWidth();
+		window.setAttributes(lp);
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {

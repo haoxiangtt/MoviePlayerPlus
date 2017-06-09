@@ -8,16 +8,16 @@
     <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
+            android:layout_margin="2dp"
             android:textSize="25sp"
             android:textStyle="bold"
             android:text="关  于"/>
     <LinearLayout 
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="30dip"
-        android:layout_marginRight="30dip"
-        android:layout_marginBottom="30dip"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="30dp"
         android:background="@drawable/dialog_bg"
         android:orientation="vertical"
         android:gravity="center">
@@ -25,12 +25,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_launcher"
-        android:layout_marginBottom="10dip"
-        android:layout_marginTop="10dip"/>
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"/>
     <TextView 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dip"
+        android:layout_marginBottom="10dp"
         android:padding="5dip"
         android:background="@drawable/radio_bg"
         android:textSize="20sp"
@@ -44,75 +44,75 @@
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
+            android:layout_margin="2dp"
             android:textSize="14sp"
             android:text="当前版本:1.0.0"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
+            android:layout_margin="2dp"
             android:textSize="14sp"
             android:text="需求设计:欧阳进夫"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
+            android:layout_margin="2dp"
             android:textSize="14sp"
             android:text="开发人员:欧阳进夫"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
+            android:layout_margin="2dp"
             android:textSize="14sp"
             android:text="团队领袖:欧阳进夫"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
+            android:layout_margin="2dp"
             android:textSize="14sp"
             android:text="测试人员:欧阳进夫"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
+            android:layout_margin="2dp"
             android:textSize="14sp"
             android:text="技术人员:欧阳进夫"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
+            android:layout_margin="2dp"
             android:textSize="14sp"
             android:text="界面设计:欧阳进夫"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
+            android:layout_margin="2dp"
             android:textSize="14sp"
             android:text="技术支持:欧阳进夫"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
-            android:layout_marginBottom="20dip"
+            android:layout_margin="2dp"
+            android:layout_marginBottom="20dp"
             android:textSize="14sp"
             android:text="反馈邮箱:20386450@qq.com"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
+            android:layout_margin="2dp"
             android:textSize="14sp"
             android:text="暴风雨 版权所有"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
+            android:layout_margin="2dp"
             android:textSize="14sp"
             android:text="Copyright@2015 OuyangJinfu."/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dip"
-            android:layout_marginBottom="10dip"
+            android:layout_margin="2dp"
+            android:layout_marginBottom="10dp"
             android:textSize="14sp"
             android:text="All Right Reserved"/>
     </LinearLayout>

@@ -5,7 +5,7 @@ import java.util.Date;
 
 import com.bfy.view.MediaPlayerController;
 import com.bfy.view.OnChangeListener;
-import com.bfy.view.PlayerView;
+import com.bfy.view.VLCVideoView;
 import com.bfy.view.VideoView;
 
 import android.app.Activity;
@@ -59,7 +59,7 @@ public class VideoPlayerActivity extends Activity implements OnClickListener,Cal
 	
 	private ViewGroup mPlayerScreen;
 	private MediaPlayerController mPlayer;
-	private PlayerView mVlcPlayer;
+	private VLCVideoView mVlcPlayer;
 	private VideoView mDefaultPlayer;
 	private ViewGroup mTitleBar;
 	private TextView mTVTitle;
@@ -179,7 +179,7 @@ public class VideoPlayerActivity extends Activity implements OnClickListener,Cal
 
 	private void init() {
 		//初始化控件
-		this.mVlcPlayer = (PlayerView)findViewById(R.id.pv_video);
+		this.mVlcPlayer = (VLCVideoView) findViewById(R.id.pv_video);
 		this.mDefaultPlayer = (VideoView)findViewById(R.id.def_video);
 		
 		this.mPlayerScreen = (ViewGroup)findViewById(R.id.player_screen);
