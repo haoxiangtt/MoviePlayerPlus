@@ -27,15 +27,19 @@
 
 
 -ignorewarnings                     # 忽略警告，避免打包时某些警告出现
--optimizationpasses 5               # 指定代码的压缩级别
+#-optimizationpasses 5               # 指定代码的压缩级别
 -dontusemixedcaseclassnames         # 是否使用大小写混合 混淆时不会产生形形色色的类名
 -dontskipnonpubliclibraryclasses    # 是否混淆第三方jar
--dontpreverify                      # 混淆时是否做预校验
 -verbose                            # 混淆时是否记录日志
+
+-dontpreverify                      # 混淆时是否做预校验
 -dontoptimize                       # 不优化输入的类文件
 
--keepattributes *Annotation*, SourceFile, InnerClasses, LineNumberTable, Signature, EnclosingMethod
--optimizations !code/simplification/arithmetic,!field/*,!class/merging/*    #优化 混淆时采用的算法
+-dontwarn java.lang.invoke.*
+-dontwarn **$$Lambda$*
+
+-keepattributes Exceptions, *Annotation*, SourceFile, InnerClasses, LineNumberTable, Signature, Deprecated, EnclosingMethod
+#-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*    #优化 混淆时采用的算法
 
 -keep public class * extends android.app.Activity    # 未指定成员，仅仅保持类名不被混淆
 -keep public class * extends android.app.Application
@@ -62,6 +66,16 @@
 -keep class **.R$* { *; }
 -keep class **.R{ *; }
 
+# keep住源文件以及行号
+-keepattributes SourceFile,LineNumberTable
+
+-keep public class * extends android.view.View {
+    public <init>(android.content.Context);
+    public <init>(android.content.Context, android.util.AttributeSet);
+    public <init>(android.content.Context, android.util.AttributeSet, int);
+    public void set*(...);
+}
+
 #实现了android.os.Parcelable接口类的任何类，以及其内部定义的Creator内部类类型的public final静态成员变量，都不能被混淆和删除
 -keep class * implements android.os.Parcelable {    # 保持Parcelable不被混淆
   public static final android.os.Parcelable$Creator *;
@@ -87,10 +101,10 @@
    public void *(android.view.View);
 }
 
--keepclassmembers class * extends android.content.Context {
-  public void *(android.view.View);
-  public void *(android.view.MenuItem);
-}
+#-keepclassmembers class * extends android.content.Context {
+#  public void *(android.view.View);
+#  public void *(android.view.MenuItem);
+#}
 
 -keepclassmembers enum * {                  # 保持枚举 enum 类不被混淆
     public static **[] values();
@@ -124,3 +138,12 @@
 #        public static *** w(...);
 #        public static *** wtf(...);
 #}
+
+
+-keep class com.bfy.movieplayerplus.http.base.MyHostnameVerifier{*;}
+-keep class com.bfy.movieplayerplus.http.base.MyX509TrustManager{*;}
+
+#-keep com.bfy.movieplayerplus.broadcastreceiver.** {*;}
+
+-keep class org.videolan.libvlc.**{*;}
+-keep class org.videolan.libvlc.util.**{*;}

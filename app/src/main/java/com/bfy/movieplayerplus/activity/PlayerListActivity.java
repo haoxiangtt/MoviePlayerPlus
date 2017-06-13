@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -45,6 +46,7 @@ import com.bfy.movieplayerplus.event.base.EventCallback;
 import com.bfy.movieplayerplus.event.base.EventHandler;
 import com.bfy.movieplayerplus.model.base.BaseModel;
 import com.bfy.movieplayerplus.utils.Constant;
+import com.bfy.movieplayerplus.utils.PermissionUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -96,18 +98,24 @@ public class PlayerListActivity extends Activity implements OnItemClickListener
 		pDialog.setCanceledOnTouchOutside(false);
 		pDialog.setMessage("正在搜索");
 
-		data = getData();
-		
-		adapter = new SimpleAdapter(this, data, R.layout.lv_movie_item, 
-				new String[]{VIDEO_NAME}, new int[]{R.id.tv_title});
 		lvplayer.setOnItemClickListener(this);
-		lvplayer.setAdapter(adapter);
-		
+		if (PermissionUtils.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+			data = getData();
+			adapter = new SimpleAdapter(this, data, R.layout.lv_movie_item,
+					new String[]{VIDEO_NAME}, new int[]{R.id.tv_title});
+			lvplayer.setAdapter(adapter);
+		}
+
+
 		
 	}
 
 	private List<Map<String, String>> getData() {
 		List<Map<String,String>> videoList = new ArrayList<Map<String,String>>();
+		if (PermissionUtils.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+			requestPermission();
+			return videoList;
+		}
 		Cursor cursor = null;
 		 String selection = VIDEO_NAME + " not like ?";
 		 String[] selectionArgs = {"%.dat"};
@@ -131,6 +139,10 @@ public class PlayerListActivity extends Activity implements OnItemClickListener
 	}
 
 	private void getMV(String key) {
+		if (PermissionUtils.checkSelfPermission(this, Manifest.permission.INTERNET)) {
+			requestPermission();
+			return;
+		}
 		EventBuilder.Event event = EventBuilder.obtain();
 		event.type = Constant.EVENT_TYPE_MODEL;
 		event.modelKey = Constant.MAIN_MODEL;
@@ -142,18 +154,18 @@ public class PlayerListActivity extends Activity implements OnItemClickListener
 		bundle.putString("page", "1");
 		bundle.putString("pagesize", "30");
 		bundle.putString("userid", "-1");
-		bundle.putString("clientver", "");
-		bundle.putString("platform", "WebFilter");
-		bundle.putString("tag", "em");
-		bundle.putString("filter", "2");
-		bundle.putString("iscorrection", "1");
-		bundle.putString("privilege_filter", "0");
-		event.requestBundle = bundle;
-		event.callback = new EventCallback() {
-			@Override
-			public void call(EventBuilder.Event event) {
-				if (pDialog.isShowing()) {
-					pDialog.dismiss();
+					bundle.putString("clientver", "");
+					bundle.putString("platform", "WebFilter");
+					bundle.putString("tag", "em");
+					bundle.putString("filter", "2");
+					bundle.putString("iscorrection", "1");
+					bundle.putString("privilege_filter", "0");
+					event.requestBundle = bundle;
+					event.callback = new EventCallback() {
+						@Override
+						public void call(EventBuilder.Event event) {
+							if (pDialog.isShowing()) {
+								pDialog.dismiss();
 				}
 				EventJsonObject result = (EventJsonObject) event.responseData;
 				if (Constant.ResponseCode.CODE_SUCCESSFULLY.equals(result.optString(BaseModel.KEY_RESULT_CODE))) {
@@ -166,7 +178,9 @@ public class PlayerListActivity extends Activity implements OnItemClickListener
 							for (int i = 0; i < lists.length(); i++) {
 								JSONObject obj = lists.optJSONObject(i);
 								Map<String, String> map = new HashMap<>();
-								map.put(VIDEO_NAME, obj.optString("MvName").replace("<em>", "").replace("</em>", ""));
+								String fullName = obj.optString("MvName").replace("<em>", "").replace("</em>", "")
+									+ " - " + obj.optString("Remark");
+								map.put(VIDEO_NAME, fullName);
 								map.put(VIDEO_PATH, obj.optString("MvHash"));
 								map.put(VIDEO_SOURCE, "kugou");
 								finalList.add(map);
@@ -201,53 +215,7 @@ public class PlayerListActivity extends Activity implements OnItemClickListener
 			long id) {
 		Map<String,String> item = data.get(position);
 		if ("kugou".equals(item.get(VIDEO_SOURCE))){
-			EventBuilder.Event ev = EventBuilder.obtain();
-			ev.type = Constant.EVENT_TYPE_MODEL;
-			ev.modelKey = Constant.MAIN_MODEL;
-			ev.requestId = 1;
-			ev.requestBundle = new Bundle();
-			ev.requestBundle.putString("url", item.get(VIDEO_PATH));
-			ev.startTime = System.currentTimeMillis();
-			ev.target = EventHandler.getInstance();
-			ev.callback = new EventCallback() {
-				@Override
-				public void call(EventBuilder.Event event) {
-					if (pDialog.isShowing()) {
-						pDialog.dismiss();
-					}
-					EventJsonObject result = (EventJsonObject) event.responseData;
-					if (Constant.ResponseCode.CODE_SUCCESSFULLY.equals(
-							result.optString(BaseModel.KEY_RESULT_CODE))) {
-						EventJsonObject json = (EventJsonObject) result.optJSONObject("json");
-						JSONObject mvdata = json.optJSONObject("mvdata");
-						if (mvdata != null) {
-							JSONObject sd = mvdata.optJSONObject("sd");
-							if (sd != null) {
-								String realUrl = sd.optString("downurl");
-								if (!TextUtils.isEmpty(realUrl)) {
-									EventBuilder.Event ev2 = EventBuilder.obtain();
-									ev2.type = Constant.EVENT_TYPE_CONTEXT;
-									ev2.requestId = ContextReceiver.TYPE_GO_ACTIVITY;
-									ev2.requestBundle = new Bundle();
-									Intent intent = new Intent(PlayerListActivity.this, VideoPlayerActivity.class);
-									Uri uri = Uri.parse(realUrl);
-									intent.setDataAndType(uri, "video/*");
-									ev2.requestBundle.putParcelable(ContextReceiver.KEY_INTENT, intent);
-									ev2.target = EventHandler.getInstance();
-									ev2.reference = new WeakReference<Context>(PlayerListActivity.this);
-									ev2.send();
-								}
-							}
-						}
-					}
-
-
-				}
-			};
-			if (!pDialog.isShowing()) {
-				pDialog.show();
-			}
-			ev.send();
+			getMVRealUrl(item);
 		} else {
 			Intent intent = new Intent(this, VideoPlayerActivity.class);
 			Uri uri = null;
@@ -265,6 +233,60 @@ public class PlayerListActivity extends Activity implements OnItemClickListener
 		}
 	}
 
+	private void getMVRealUrl(Map<String, String> item) {
+		if (PermissionUtils.checkSelfPermission(this, Manifest.permission.INTERNET)) {
+			requestPermission();
+			return;
+		}
+		EventBuilder.Event ev = EventBuilder.obtain();
+		ev.type = Constant.EVENT_TYPE_MODEL;
+		ev.modelKey = Constant.MAIN_MODEL;
+		ev.requestId = 1;
+		ev.requestBundle = new Bundle();
+		ev.requestBundle.putString("url", item.get(VIDEO_PATH));
+		ev.startTime = System.currentTimeMillis();
+		ev.target = EventHandler.getInstance();
+		ev.callback = new EventCallback() {
+            @Override
+            public void call(EventBuilder.Event event) {
+                if (pDialog.isShowing()) {
+                    pDialog.dismiss();
+                }
+                EventJsonObject result = (EventJsonObject) event.responseData;
+                if (Constant.ResponseCode.CODE_SUCCESSFULLY.equals(
+                        result.optString(BaseModel.KEY_RESULT_CODE))) {
+                    EventJsonObject json = (EventJsonObject) result.optJSONObject("json");
+                    JSONObject mvdata = json.optJSONObject("mvdata");
+                    if (mvdata != null) {
+                        JSONObject sd = mvdata.optJSONObject("sd");
+                        if (sd != null) {
+                            String realUrl = sd.optString("downurl");
+                            if (!TextUtils.isEmpty(realUrl)) {
+                                EventBuilder.Event ev2 = EventBuilder.obtain();
+                                ev2.type = Constant.EVENT_TYPE_CONTEXT;
+                                ev2.requestId = ContextReceiver.TYPE_GO_ACTIVITY;
+                                ev2.requestBundle = new Bundle();
+                                Intent intent = new Intent(PlayerListActivity.this, VideoPlayerActivity.class);
+                                Uri uri = Uri.parse(realUrl);
+                                intent.setDataAndType(uri, "video/*");
+                                ev2.requestBundle.putParcelable(ContextReceiver.KEY_INTENT, intent);
+                                ev2.target = EventHandler.getInstance();
+                                ev2.reference = new WeakReference<Context>(PlayerListActivity.this);
+                                ev2.send();
+                            }
+                        }
+                    }
+                }
+
+
+            }
+        };
+		if (!pDialog.isShowing()) {
+            pDialog.show();
+        }
+		ev.send();
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -277,9 +299,38 @@ public class PlayerListActivity extends Activity implements OnItemClickListener
 //		ActionBar actionBar = getSupportActionBar();
 //		actionBar.setDisplayHomeAsUpEnabled(true);
 //		actionBar.setDisplayShowHomeEnabled(true);
+		requestPermission();
 		init();
 	}
-	
+
+	private void requestPermission() {
+		if (PermissionUtils.isNeedRequestPermission()) {
+			List<String> list = new ArrayList<>();
+			if (PermissionUtils.checkSelfPermission(
+				this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+				list.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+			}
+			if (PermissionUtils.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+				list.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+			}
+			if (PermissionUtils.checkSelfPermission(this, Manifest.permission.VIBRATE)) {
+				list.add(Manifest.permission.VIBRATE);
+			}
+			if (PermissionUtils.checkSelfPermission(this, Manifest.permission.INTERNET)) {
+				list.add(Manifest.permission.INTERNET);
+			}
+			if (PermissionUtils.checkSelfPermission(this, Manifest.permission.WAKE_LOCK)) {
+				list.add(Manifest.permission.WAKE_LOCK);
+			}
+
+			if (list.size() > 0) {
+				String[] requests = list.toArray(new String[list.size()]);
+				PermissionUtils.requestPermission(this, requests, 1001);
+			}
+
+		}
+	}
+
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub

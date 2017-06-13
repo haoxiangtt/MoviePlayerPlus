@@ -2,6 +2,7 @@ package com.bfy.movieplayerplus.http;
 
 import android.content.Context;
 
+import java.net.HttpURLConnection;
 import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -58,8 +59,8 @@ public class RequestManager {
 	}
 
 	private RequestManager() {
-		initHttpHostnameVerifier();
-		initHttpsHostnameVerifier();
+//		initHttpHostnameVerifier();
+//		initHttpsHostnameVerifier();
 	}
 
 	private static void initHttpsHostnameVerifier() {
