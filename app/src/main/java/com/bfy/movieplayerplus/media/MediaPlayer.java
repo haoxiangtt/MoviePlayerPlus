@@ -20,7 +20,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-package com.bfy.media;
+package com.bfy.movieplayerplus.media;
 
 import android.content.Context;
 import android.media.AudioAttributes;

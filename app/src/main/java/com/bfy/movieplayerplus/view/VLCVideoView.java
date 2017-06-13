@@ -1,4 +1,4 @@
-package com.bfy.view;
+package com.bfy.movieplayerplus.view;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -19,7 +19,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.MediaController;
 
-import com.bfy.media.MediaPlayer;
+import com.bfy.movieplayerplus.media.MediaPlayer;
 
 import java.io.File;
 import java.io.IOException;

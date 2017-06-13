@@ -1,12 +1,13 @@
-package com.bfy.movieplayerplus;
+package com.bfy.movieplayerplus.activity;
 
 import java.util.ArrayList;
 import java.util.Date;
 
-import com.bfy.view.MediaPlayerController;
-import com.bfy.view.OnChangeListener;
-import com.bfy.view.VLCVideoView;
-import com.bfy.view.VideoView;
+import com.bfy.movieplayerplus.R;
+import com.bfy.movieplayerplus.view.MediaPlayerController;
+import com.bfy.movieplayerplus.view.OnChangeListener;
+import com.bfy.movieplayerplus.view.VLCVideoView;
+import com.bfy.movieplayerplus.view.VideoView;
 
 import android.app.Activity;
 import android.app.AlertDialog;

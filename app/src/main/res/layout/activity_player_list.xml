@@ -13,10 +13,29 @@
 			android:text="标题"
 			android:textSize="20sp"/>&ndash;&gt;
 	</android.support.v7.widget.Toolbar>-->
+	<LinearLayout
+		android:id="@+id/ll_search"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+		<EditText
+			android:id="@+id/et_search"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:hint="请输入你要搜索的MV"/>
+		<Button
+			android:id="@+id/bt_search"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:text="搜索"/>
+	</LinearLayout>
 	<ListView 
 	    android:id="@+id/player_list"
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
+		android:layout_below="@id/ll_search"
 	    android:divider="@android:color/darker_gray"
 	    android:dividerHeight="1dp"
 	    android:cacheColorHint="@android:color/transparent"/>

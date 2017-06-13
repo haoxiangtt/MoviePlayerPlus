@@ -1,4 +1,4 @@
-package com.bfy.view;
+package com.bfy.movieplayerplus.view;
 
 /*
  * Copyright (C) 2006 The Android Open Source Project
@@ -34,7 +34,7 @@ import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.MediaController;
 
-import com.bfy.view.MediaPlayerController;
+import com.bfy.movieplayerplus.view.MediaPlayerController;
 
 import java.io.File;
 import java.io.IOException;

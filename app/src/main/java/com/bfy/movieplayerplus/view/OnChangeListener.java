@@ -1,4 +1,4 @@
-package com.bfy.view;
+package com.bfy.movieplayerplus.view;
 
 public interface OnChangeListener {
 
