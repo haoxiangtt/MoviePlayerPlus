@@ -25,9 +25,9 @@
 #-renamesourcefileattribute SourceFile
 
 
-
+#android全局混淆配置
 -ignorewarnings                     # 忽略警告，避免打包时某些警告出现
-#-optimizationpasses 5               # 指定代码的压缩级别
+-optimizationpasses 5               # 指定代码的压缩级别
 -dontusemixedcaseclassnames         # 是否使用大小写混合 混淆时不会产生形形色色的类名
 -dontskipnonpubliclibraryclasses    # 是否混淆第三方jar
 -verbose                            # 混淆时是否记录日志
@@ -39,7 +39,7 @@
 -dontwarn **$$Lambda$*
 
 -keepattributes Exceptions, *Annotation*, SourceFile, InnerClasses, LineNumberTable, Signature, Deprecated, EnclosingMethod
-#-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*    #优化 混淆时采用的算法
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*    #优化 混淆时采用的算法
 
 -keep public class * extends android.app.Activity    # 未指定成员，仅仅保持类名不被混淆
 -keep public class * extends android.app.Application
@@ -139,7 +139,7 @@
 #        public static *** wtf(...);
 #}
 
-
+#项目中的混淆配置
 -keep class com.bfy.movieplayerplus.http.base.MyHostnameVerifier{*;}
 -keep class com.bfy.movieplayerplus.http.base.MyX509TrustManager{*;}
 

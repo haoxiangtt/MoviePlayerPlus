@@ -1,5 +1,6 @@
 package com.bfy.movieplayerplus.event;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -15,10 +16,10 @@ import com.bfy.movieplayerplus.utils.LogUtils;
 
 /**
  * <pre>
- * @copyright  : Copyright ©2004-2018 版权所有　彩讯科技股份有限公司
- * @company    : 彩讯科技股份有限公司
+ * @copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
+ * @company    : XXXXXXXXXXXXXXXXX
  * @author     : OuyangJinfu
- * @e-mail     : ouyangjinfu@richinfo.cn
+ * @e-mail     : jinfu123.-@163.com
  * @createDate : 2017/4/19
  * @modifyDate : 2017/4/19
  * @version    : 1.0
@@ -36,17 +37,31 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
     public static final int TYPE_SEND_BROADCAST = 1;
     public static final int TYPE_START_SERVICE = 2;
 
+
+    //如果调用startActivityForResult,则此项设置为true
+    public static final String KEY_START_FOR_RESULT = "intent_for_result";
+    //如果调用如果调用startActivityForResult，需要填写一个requestCode作为请求码
+    public static final String KEY_REQUEST_CODE = "intent_request_code";
+
+    //直接从requestBundle中过去用户定义的intent
     public static final String KEY_INTENT = "intent_intent";
+
+/*程序自动生成一个需要发送的intent*/
+    //获取所要传递的数据
     public static final String KEY_BUNDLE = "intent_bundle";
+    //获取跳转组件的class类实例
     public static final String KEY_CLASS = "intent_class";
+    //获取需要设置的行为字符串
     public static final String KEY_ACTION = "intent_action";
+    //获取需要设置的URI
     public static final String KEY_DATA = "intent_data";
+    //获取需要设置的category
     public static final String KEY_CATEGORY = "intent_category";
 
+    //广播类型
     public static final String KEY_LOCAL_BROACAST = "intent_is_local_broadcasr";
-
     public static final String KEY_STICKY_BROACAST = "intent_is_sticky_broadcast";
-
+/**********************************/
     private static ContextReceiver mInstance;
 
     private ContextReceiver(){
@@ -69,12 +84,23 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
 
     protected void goActivity(EventBuilder.Event ev){
         Intent intent = getIntent(ev);
+        boolean forResult = ev.requestBundle.getBoolean(KEY_START_FOR_RESULT, false);
+        int requestCode = ev.requestBundle.getInt(KEY_REQUEST_CODE, 200);
         if (ev.reference != null && ev.reference.get() != null) {
-            ev.reference.get().startActivity(intent);
+            if (forResult) {
+                if (ev.reference.get() instanceof Activity) {
+                    ((Activity) ev.reference.get()).startActivityForResult(intent, requestCode);
+                } else {
+                    LogUtils.e(TAG, ">>>>ev.reference.get() cannot Cast to Activity, maybe it is not a" +
+                            " Activity,so cannot invoke startActivityForResult method.");
+                }
+            } else {
+                ev.reference.get().startActivity(intent);
+            }
         } else {
-            LogUtils.e(TAG, "ev.reference.get() is null,cannot start activity!");
+            LogUtils.e(TAG, "ev.reference is null or ev.reference.get() is null,cannot start activity!");
             if (DEBUG) {
-                throw new NullPointerException("ev.reference.get() is null,cannot start activity!");
+                throw new NullPointerException("ev.reference is null or ev.reference.get() is null,cannot start activity!");
             }
         }
 
@@ -82,7 +108,7 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
 
     protected void sendBroadcast(EventBuilder.Event ev){
         Intent intent = getIntent(ev);
-        if (ev.reference.get() != null) {
+        if (ev.reference != null && ev.reference.get() != null) {
             if (ev.requestBundle.getBoolean(KEY_LOCAL_BROACAST, false)) {
                 LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(ev.reference.get());
                 lbm.sendBroadcast(intent);
@@ -95,19 +121,22 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
                 }
             }
         } else {
-            LogUtils.e(TAG, "ev.reference.get() is null,cannot send broadcast!");
+            LogUtils.e(TAG, "ev.reference is null or ev.reference.get() is null,cannot send broadcast!");
             if (DEBUG) {
-                throw new NullPointerException("ev.reference.get() is null,cannot send broadcast!");
+                throw new NullPointerException("ev.reference is null or ev.reference.get() is null,cannot send broadcast!");
             }
         }
     }
 
     protected void startService(EventBuilder.Event ev){
         Intent intent = getIntent(ev);
-        if (ev.reference.get() != null) {
+        if (ev.reference != null && ev.reference.get() != null) {
             ev.reference.get().startService(intent);
         } else {
-            throw new NullPointerException("ev.reference.get() is null,cannot start activity!");
+            LogUtils.e(TAG, "ev.reference is null or ev.reference.get() is null,cannot start service!");
+            if (DEBUG) {
+                throw new NullPointerException("ev.reference is null or ev.reference.get() is null,cannot start service!");
+            }
         }
     }
 

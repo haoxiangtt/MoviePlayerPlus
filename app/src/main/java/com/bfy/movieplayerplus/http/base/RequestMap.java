@@ -22,10 +22,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <pre>
- * @copyright  : Copyright ©2004-2018 版权所有　彩讯科技股份有限公司
- * @company    : 彩讯科技股份有限公司
+ * @copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
+ * @company    : XXXXXXXXXXXXXXXXX
  * @author     : OuyangJinfu
- * @e-mail     : ouyangjinfu@richinfo.cn
+ * @e-mail     : jinfu123.-@163.com
  * @createDate : 2017/4/13 0023
  * @modifyDate : 2017/4/13 0023
  * @version    : 1.0

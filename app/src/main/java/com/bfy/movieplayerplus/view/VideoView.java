@@ -34,7 +34,7 @@ import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.MediaController;
 
-import com.bfy.movieplayerplus.view.MediaPlayerController;
+import com.bfy.movieplayerplus.utils.LogUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,15 +49,9 @@ import java.util.ArrayList;
  */
 public class VideoView extends SurfaceView implements MediaPlayerController{
 
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = LogUtils.isDebug;
     private static final String TAG = "VideoView";
-//  private static final String RECORD_POINT = "RECORD_POINT_DATA";
-    private final static int SCREEN_FULL = 0;
-    private final static int SCREEN_DEFAULT = 1;
-    private final static int SCALE_MODE_DEFAULT = 0;
-    private final static int SCALE_MODE_16_9 = 1;
-    private final static int SCALE_MODE_4_3 = 2;
-    
+
     private Context mContext;
     private ArrayList<String> mMediaList;
     private Uri         mCurrentUri;
@@ -78,12 +72,6 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
     private boolean     mStartWhenPrepared;
     private int         mSeekWhenPrepared;
 
-	//private OnCompletionListener 		mOnCompletionListener;
-    //private OnPreparedListener 			mOnPreparedListener;
-    //private OnErrorListener 			mOnErrorListener;
-    //private OnBufferingUpdateListener 	mOnBufferingListener;
-    //private MySizeChangeLinstener 		mMyChangeLinstener;
-    //private OnRecordVideoListener 		mRecordVideoListener;
     private OnChangeListener mOnChangeListener;
     
     public VideoView(Context context) {
@@ -113,9 +101,9 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 	            	mMyChangeLinstener.doMyThings();
 	            }*/
 	            
-	            if (mVideoWidth != 0 && mVideoHeight != 0) {
+	            /*if (mVideoWidth != 0 && mVideoHeight != 0) {
 	                getHolder().setFixedSize(mVideoWidth, mVideoHeight);
-	            }
+	            }*/
 	        }
 	};
 	
@@ -269,24 +257,10 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-	    //Log.i("@@@@", "onMeasure");
-	    int width = getDefaultSize(mVideoWidth, widthMeasureSpec);
-	    int height = getDefaultSize(mVideoHeight, heightMeasureSpec);
-	    /*if (mVideoWidth > 0 && mVideoHeight > 0) {
-	        if ( mVideoWidth * height  > width * mVideoHeight ) {
-	            //Log.i("@@@", "image too tall, correcting");
-	            height = width * mVideoHeight / mVideoWidth;
-	        } else if ( mVideoWidth * height  < width * mVideoHeight ) {
-	            //Log.i("@@@", "image too wide, correcting");
-	            width = height * mVideoWidth / mVideoHeight;
-	        } else {
-	            //Log.i("@@@", "aspect ratio is correct: " +
-	                    //width+"/"+height+"="+
-	                    //mVideoWidth+"/"+mVideoHeight);
-	        }
-	    }*/
-	    //Log.i("@@@@@@@@@@", "setting size: " + width + 'x' + height);
-	    setMeasuredDimension(width,height);
+		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+//	    int width = getDefaultSize(mVideoWidth, widthMeasureSpec);
+//	    int height = getDefaultSize(mVideoHeight, heightMeasureSpec);
+//	    setMeasuredDimension(width,height);
 	}
 
 	private void initVideoView() {
@@ -353,7 +327,6 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 	    }
 
 	private void setScale(int width , int height){
-			if(DEBUG) Log.i(TAG, "width = " + width + " height = " + height);
 			getHolder().setFixedSize(width, height);
 			LayoutParams lp = getLayoutParams();
 			lp.height = height;
@@ -393,6 +366,14 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 	     }
 	}*/
 
+	/*public void setMediaController(MediaController controller) {
+	     if (mMediaController != null) {
+	         mMediaController.hide();
+	     }
+	     mMediaController = controller;
+	     attachMediaController();
+	}*/
+
 	public int getVideoWidth(){
     	return mVideoWidth;
     }
@@ -401,97 +382,59 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
     	return mVideoHeight;
     }
     
-  /*  public Uri getVideoUri(){
-		return mCurrentUri;
-	}*/
-    
-    
-    
+    @Override
     public void setVideoScale(int flag,int scalMode){
     	if(!(mContext instanceof Activity)) return;
+    	switch(flag){
+    		case SCREEN_FULL: {
+				((Activity) mContext).getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+				((Activity) mContext).getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE | View.GONE);
+//				setScale(r.width(), r.height());
+				break;
+			}
+    		case SCREEN_DEFAULT: {
+				//end by haoxiangtt
+				((Activity) mContext).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+				((Activity) mContext).getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+
+				break;
+			}
+    	}
 		Rect r = new Rect();
 		View p = ((View)getParent());
 		if(p != null) p.getGlobalVisibleRect(r);
-    	switch(flag){
-    		case SCREEN_FULL:
-    			if(r != null){
-	    			setScale(r.width(), r.height());
-	    			((Activity)mContext).getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-	    			((Activity)mContext).getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE | View.GONE);
-    			}
-    			break;
-    		case SCREEN_DEFAULT:
-//    			if(!isFullScreen) return;
-    			int mWidth = r.width();
-    			int mHeight = r.height();
- 
-    			//add by haoxiangtt 2014.4.2 for change scale
-    			int[] scale = null;
-    			switch (scalMode) {
-					case SCALE_MODE_DEFAULT:
-						//原比例
-						scale = adjustScale(mWidth, mHeight, mVideoWidth, mVideoHeight);
-						break;
-					case SCALE_MODE_16_9:
-						//16:9
-						scale = adjustScale(mWidth, mHeight, 16, 9);
-						break;
-					case SCALE_MODE_4_3:
-						//4:3
-						scale = adjustScale(mWidth, mHeight, 4, 3);
-						break;
-				}
-    			if(DEBUG) Log.i(TAG, "the scale =("+scale[0]+":"+scale[1]+")");
-    			//end by haoxiangtt
-    			setScale(scale[0], scale[1]);
-    			((Activity)mContext).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-    			((Activity)mContext).getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-    			break;
-    	}
-    	
+
+		int mWidth = r.width();
+		int mHeight = r.height();
+		if (DEBUG) Log.i(TAG, "the parent screen width/height =(" + mWidth + ":" + mHeight + ")");
+		if (DEBUG) Log.i(TAG, "the video width/height =(" + mVideoWidth + ":" + mVideoHeight + ")");
+		//add by haoxiangtt 2014.4.2 for change scale
+		int[] scale = null;
+		switch (scalMode) {
+			case SCALE_MODE_DEFAULT: {
+				//原比例
+				scale = adjustScale(mWidth, mHeight, mVideoWidth, mVideoHeight);
+				break;
+			}
+			case SCALE_MODE_16_9: {
+				//16:9
+				scale = adjustScale(mWidth, mHeight, 16, 9);
+				break;
+			}
+			case SCALE_MODE_4_3: {
+				//4:3
+				scale = adjustScale(mWidth, mHeight, 4, 3);
+				break;
+			}
+			case SCALE_MODE_FULL: {
+				scale = adjustScale(mWidth, mHeight, 0, 0);
+			}
+		}
+		if (DEBUG) LogUtils.i(TAG, "the scale =(" + scale[0] + ":" + scale[1] + ")");
+		setScale(scale[0], scale[1]);
     }
 
-	
-
     
-    
-    
-    
-	/*public void setMediaController(MediaController controller) {
-	     if (mMediaController != null) {
-	         mMediaController.hide();
-	     }
-	     mMediaController = controller;
-	     attachMediaController();
-	}*/
-		
-	
-		
-	/*public void setMySizeChangeLinstener(MySizeChangeLinstener l){
-		mMyChangeLinstener = l;
-	}
-
-	public void setRecordVideoListener(OnRecordVideoListener l){
-		mRecordVideoListener = l;
-	}
-
-	public void setOnPreparedListener(MediaPlayer.OnPreparedListener l){
-		mOnPreparedListener = l;
-	}
-
-
-	public void setOnCompletionListener(OnCompletionListener l){
-		mOnCompletionListener = l;
-	}
-
-	public void setOnErrorListener(OnErrorListener l){
-		mOnErrorListener = l;
-	}
-		
-	public void setOnBufferingListener(OnBufferingUpdateListener l){
-		mOnBufferingListener = l;
-	}*/
-
 	public int resolveAdjustedSize(int desiredSize, int measureSpec) {
 		int result = desiredSize;
 		int specMode = MeasureSpec.getMode(measureSpec);
@@ -517,25 +460,6 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 		return result;
 	}
 
-	/*public void recordPosition(long position) {
-		if(mCurrentUri != null){
-			//Log.i(TAG, "record Position..........:"+position);
-        	SharedPreferences  pre = mContext.getSharedPreferences(RECORD_POINT, Context.MODE_PRIVATE);
-        	Editor editor = pre.edit();
-        	String path = mCurrentUri.getPath();
-        	editor.putLong(path, position);
-        	editor.commit();
-    	}
-	}
-    
-    public long readPosition(){
-    	if(mCurrentUri != null){
-	        SharedPreferences pre = mContext.getSharedPreferences(RECORD_POINT, Context.MODE_PRIVATE);
-	        return pre.getLong(mCurrentUri.getPath(), 0);
-        }else{
-        	return 0;
-        }
-    }*/
     
     public boolean takeScreenShot(){
     	return false;
@@ -779,9 +703,10 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 		return mCurrentUri != null ? mCurrentUri.toString() : "";
 	}
 
+	@Override
+	public int getCurrentPlayIndex() {
+		return mCurrentIndex;
+	}
 
 
-	
-
-	
 }

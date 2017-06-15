@@ -6,7 +6,7 @@ import java.security.NoSuchAlgorithmException;
  * Title: XXXX (类或者接口名称)
  * Description: XXXX (简单对此类或接口的名字进行描述)
  * Copyright: Copyright (c) 2012
- * Company:深圳彩讯科技有限公司
+ * Company:XXXXXXXXXXXXXXXXX
  *
  * @author duminghui
  * @version 1.0

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.bfy.movieplayerplus.R;
+import com.bfy.movieplayerplus.utils.LogUtils;
 import com.bfy.movieplayerplus.utils.ScreenUtils;
 import com.bfy.movieplayerplus.view.MediaPlayerController;
 import com.bfy.movieplayerplus.view.OnChangeListener;
@@ -18,17 +19,21 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.res.Configuration;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Handler.Callback;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
@@ -44,7 +49,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 						OnSeekBarChangeListener,OnChangeListener{
 
 	private static final String TAG = "VideoPlayerActivity";
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = LogUtils.isDebug;
 	private static final int RECORDER_DEFAULT = 0;
 	private static final int RECORDER_VLC = 1;
 	
@@ -89,22 +94,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	
 	private long mStartTime = 0;
 	private float mLastX = 0;
-	private SensorManager sensorManager;
-	private Sensor sensor;
-
-	private ScreenUtils.OrientationHandleListener mHandleListener
-			= new ScreenUtils.OrientationHandleListener() {
-		@Override
-		public void handlerOrientation(int orientation) {
-			if (orientation > 45 && orientation < 135
-					|| orientation > 225 && orientation < 315) {
-				ScreenUtils.requestOrientation(VideoPlayerActivity.this, orientation);
-			}
-		}
-	};
-
-	private  ScreenUtils.OrientationSensorListener mSensorListener
-		= new ScreenUtils.OrientationSensorListener(mHandleListener);
 
 
 	@Override
@@ -113,14 +102,11 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.video_player_layout);
-		sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-		sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		init();
 		handleIntent();
 	}
 	
-	/************************************************************************/
-	
+
 	@Override
 	protected void onStart() {
 		if(DEBUG){ Log.i(TAG, "on avtibity start........"); }
@@ -132,7 +118,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	protected void onResume() {
 		super.onResume();
 		if(DEBUG){ Log.i(TAG, "on avtibity resume........"); }
-		sensorManager.registerListener(mSensorListener, sensor, SensorManager.SENSOR_DELAY_UI);
 		if(!this.mPlayer.isPlaying()){
 			if(DEBUG){ Log.i(TAG, "on player start........"); }
 			this.mPlayer.start();
@@ -148,9 +133,31 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	}
 
 	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		ViewGroup.LayoutParams lp = ((View) mPlayer).getLayoutParams();
+		lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
+		lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
+		super.onConfigurationChanged(newConfig);
+		mPlayerScreen.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+			@Override
+			public void onGlobalLayout() {
+				mPlayer.setVideoScale(MediaPlayerController.SCREEN_FULL,
+						MediaPlayerController.SCALE_MODE_DEFAULT);
+				if (Build.VERSION.SDK_INT >= 16) {
+					mPlayerScreen.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+				} else {
+					mPlayerScreen.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+				}
+			}
+		});
+
+	}
+
+
+
+	@Override
 	protected void onPause() {
 		if(DEBUG){ Log.i(TAG, "on avtibity pause........"); }
-		sensorManager.unregisterListener(mSensorListener);
 		if(this.mPlayer.isPlaying()){
 			if(isRecordPosition){ recordPosition(this.mPlayer.getTime()); }
 			this.mPlayer.stop();
@@ -254,9 +261,13 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	private void handleIntent() {
 		Intent intent = getIntent();
 		Uri uri = intent.getData();
-		
-		
-		if(uri != null){
+
+		String url = "";
+		if (uri != null) {
+			url = (uri.getHost() != null ? uri.getHost() : "") + (uri.getPort() != -1 ? ":" + uri.getPort() : "")
+				+ (uri.getPath() != null ? "/" + uri.getPath() : "");
+		}
+		if(uri != null && !TextUtils.isEmpty(url)){
 			if(DEBUG){ Log.i(TAG, ">>>>>>>>>uri="+uri.toString()+"<<<<<<<<<<<"); }
 			this.isPlayOnce = true;
 			this.mPlayer.initPlayer(uri.toString().trim());
