@@ -1,8 +1,8 @@
 package com.bfy.movieplayerplus.activity;
 
 
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +22,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,6 +39,7 @@ import android.widget.RadioGroup;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bfy.movieplayerplus.R;
@@ -51,7 +55,7 @@ import com.bfy.movieplayerplus.utils.PermissionUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class PlayerListActivity extends Activity implements OnItemClickListener
+public class PlayerListActivity extends AppCompatActivity implements OnItemClickListener
 		, View.OnClickListener{
 	private static final int MENU_ACTION_ABOUT = 0;
 	private static final int MENU_ACTION_SETTINGS = 1;
@@ -84,7 +88,7 @@ public class PlayerListActivity extends Activity implements OnItemClickListener
 
 	ProgressDialog pDialog;
 
-//	Toolbar mToolbar;
+	Toolbar mToolbar;
 	
 	
 	private void init() {
@@ -99,7 +103,7 @@ public class PlayerListActivity extends Activity implements OnItemClickListener
 		pDialog.setMessage("正在搜索");
 
 		lvplayer.setOnItemClickListener(this);
-		if (PermissionUtils.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+		if (!PermissionUtils.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
 			data = getData();
 			adapter = new SimpleAdapter(this, data, R.layout.lv_movie_item,
 					new String[]{VIDEO_NAME}, new int[]{R.id.tv_title});
@@ -292,13 +296,13 @@ public class PlayerListActivity extends Activity implements OnItemClickListener
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_player_list);
-//		mToolbar = (Toolbar) findViewById(R.id.toolbar);
-//		mToolbar.setTitle("播放列表");
-//		//设置导航图标要在setSupportActionBar方法之后
-//		setSupportActionBar(mToolbar);
-//		ActionBar actionBar = getSupportActionBar();
-//		actionBar.setDisplayHomeAsUpEnabled(true);
-//		actionBar.setDisplayShowHomeEnabled(true);
+		mToolbar = (Toolbar) findViewById(R.id.toolbar);
+		mToolbar.setTitle("播放列表");
+		//设置导航图标要在setSupportActionBar方法之后
+		setSupportActionBar(mToolbar);
+		ActionBar actionBar = getSupportActionBar();
+		actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setDisplayShowHomeEnabled(true);
 		requestPermission();
 		init();
 	}
@@ -378,12 +382,12 @@ public class PlayerListActivity extends Activity implements OnItemClickListener
 				return d;
 			}
 			case MENU_ACTION_SETTINGS:{
-				AlertDialog d = new AlertDialog.Builder(this).setTitle(R.string.action_settings)
+				AlertDialog d = new AlertDialog.Builder(this)
+						.setTitle(R.string.action_settings)
 						.setPositiveButton(R.string.comfirm, null)
 						.setNegativeButton(R.string.cancel, null).create();
 				View root = getLayoutInflater().inflate(R.layout.settings_layout,null);
-				d.setView(root, 0, 0, 0, 0);
-				
+				d.setView(root);
 				RadioGroup rg = (RadioGroup)root.findViewById(R.id.setting_rb_group);
 				final SharedPreferences sp = getSharedPreferences(MAIN_SETTINGS, Context.MODE_PRIVATE);
 				int recoder = sp.getInt(KEY_RECODER, 0);

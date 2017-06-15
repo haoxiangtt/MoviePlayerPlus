@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.bfy.movieplayerplus.R;
+import com.bfy.movieplayerplus.utils.ScreenUtils;
 import com.bfy.movieplayerplus.view.MediaPlayerController;
 import com.bfy.movieplayerplus.view.OnChangeListener;
 import com.bfy.movieplayerplus.view.VLCVideoView;
@@ -17,11 +18,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Handler.Callback;
 import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,7 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.view.animation.AnimationUtils;
 
-public class VideoPlayerActivity extends Activity implements OnClickListener,Callback,
+public class VideoPlayerActivity extends AppCompatActivity implements OnClickListener,Callback,
 						OnSeekBarChangeListener,OnChangeListener{
 
 	private static final String TAG = "VideoPlayerActivity";
@@ -85,13 +89,32 @@ public class VideoPlayerActivity extends Activity implements OnClickListener,Cal
 	
 	private long mStartTime = 0;
 	private float mLastX = 0;
-	
+	private SensorManager sensorManager;
+	private Sensor sensor;
+
+	private ScreenUtils.OrientationHandleListener mHandleListener
+			= new ScreenUtils.OrientationHandleListener() {
+		@Override
+		public void handlerOrientation(int orientation) {
+			if (orientation > 45 && orientation < 135
+					|| orientation > 225 && orientation < 315) {
+				ScreenUtils.requestOrientation(VideoPlayerActivity.this, orientation);
+			}
+		}
+	};
+
+	private  ScreenUtils.OrientationSensorListener mSensorListener
+		= new ScreenUtils.OrientationSensorListener(mHandleListener);
+
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.video_player_layout);
+		sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+		sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		init();
 		handleIntent();
 	}
@@ -107,8 +130,9 @@ public class VideoPlayerActivity extends Activity implements OnClickListener,Cal
 
 	@Override
 	protected void onResume() {
-		if(DEBUG){ Log.i(TAG, "on avtibity resume........"); }
 		super.onResume();
+		if(DEBUG){ Log.i(TAG, "on avtibity resume........"); }
+		sensorManager.registerListener(mSensorListener, sensor, SensorManager.SENSOR_DELAY_UI);
 		if(!this.mPlayer.isPlaying()){
 			if(DEBUG){ Log.i(TAG, "on player start........"); }
 			this.mPlayer.start();
@@ -126,6 +150,7 @@ public class VideoPlayerActivity extends Activity implements OnClickListener,Cal
 	@Override
 	protected void onPause() {
 		if(DEBUG){ Log.i(TAG, "on avtibity pause........"); }
+		sensorManager.unregisterListener(mSensorListener);
 		if(this.mPlayer.isPlaying()){
 			if(isRecordPosition){ recordPosition(this.mPlayer.getTime()); }
 			this.mPlayer.stop();
