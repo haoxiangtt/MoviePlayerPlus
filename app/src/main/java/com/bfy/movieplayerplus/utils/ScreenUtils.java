@@ -197,7 +197,6 @@ public class ScreenUtils {
 				}
 			}
 
-			//todo
 			if (mHandleListener != null) {
 				mHandleListener.handlerOrientation(orientation);
 			}

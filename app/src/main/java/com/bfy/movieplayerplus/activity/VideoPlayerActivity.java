@@ -134,9 +134,9 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
-		ViewGroup.LayoutParams lp = ((View) mPlayer).getLayoutParams();
-		lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
-		lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
+//		ViewGroup.LayoutParams lp = ((View) mPlayer).getLayoutParams();
+//		lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
+//		lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
 		super.onConfigurationChanged(newConfig);
 		mPlayerScreen.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
@@ -281,7 +281,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 			ArrayList<String> list = (ArrayList<String>)b.getSerializable("medialist");
 			if(list == null){ showMessage(getResources().getString(R.string.no_video));finish(); }
 			int index = b.getInt("index", 0);
-			this.mVlcPlayer.initPlayer(list, index);
+			this.mPlayer.initPlayer(list, index);
 			//this.mPlayer.start();
 			this.mTVTitle.setText(list.get(index));
 			mHandler.sendEmptyMessage(HANDLE_SHOW_CONTROLLER);

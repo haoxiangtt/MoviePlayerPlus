@@ -291,7 +291,6 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_player_list);
 		mToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -335,31 +334,26 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 
 	@Override
 	protected void onStart() {
-		// TODO Auto-generated method stub
 		super.onStart();
 	}
 	
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
 	}
 	
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		super.onPause();
 	}
 	
 	@Override
 	protected void onStop() {
-		// TODO Auto-generated method stub
 		super.onStop();
 	}
 	
 	@Override
 	protected void onDestroy() {
-		// TODO Auto-generated method stub
 		super.onDestroy();
 	}
 	
@@ -426,6 +420,9 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 				break;
 			case R.id.action_settings:
 				showDialog(MENU_ACTION_SETTINGS);
+				break;
+			case android.R.id.home:
+				onBackPressed();
 				break;
 		}
 		return super.onOptionsItemSelected(item);

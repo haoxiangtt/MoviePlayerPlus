@@ -65,12 +65,6 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
     private boolean     mStartWhenPrepared;
     private int         mSeekWhenPrepared;
 
-    //private OnCompletionListener 		mOnCompletionListener;
-    //private OnPreparedListener 			mOnPreparedListener;
-    //private OnErrorListener 			mOnErrorListener;
-    //private OnBufferingUpdateListener 	mOnBufferingListener;
-    //private MySizeChangeLinstener 		mMyChangeLinstener;
-    //private OnRecordVideoListener 		mRecordVideoListener;
     private OnChangeListener mOnChangeListener;
 
 
@@ -309,11 +303,7 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
         try {
 //	        	begin playing video.........................................
             mDuration = -1;
-//		        mSeekWhenPrepared = (int)readPosition();
-//		        mSeekWhenPrepared = 0;
-//	        	mCurrentBufferPercentage = 0;
-            mIsPrepared = true;
-            //mStartWhenPrepared = false;
+            mIsPrepared = false;
             mMediaPlayer = new MediaPlayer();
             mMediaPlayer.setOnPreparedListener(mPreparedListener);
             mMediaPlayer.setOnVideoSizeChangedListener(mSizeChangedListener);
@@ -322,7 +312,6 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
             mMediaPlayer.setOnBufferingUpdateListener(mBufferingUpdateListener);
             //mMediaPlayer.setOnTimedTextListener(null);
             mMediaPlayer.setDataSource(mContext, mCurrentUri);
-//            mMediaPlayer.setDisplay(mSurfaceHolder);
             mMediaPlayer.setSurfaceView(this);
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             //mMediaPlayer.setVolume(1f, 1f);
@@ -338,8 +327,7 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
     }
 
     private void setScale(int width , int height){
-        if(DEBUG) Log.i(TAG, "width = " + width + " height = " + height);
-        getHolder().setFixedSize(width, height);
+//        getHolder().setFixedSize(width, height);
         ViewGroup.LayoutParams lp = getLayoutParams();
         lp.height = height;
         lp.width = width;

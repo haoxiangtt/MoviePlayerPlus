@@ -37,13 +37,13 @@ public class ModelFilter implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
 
-        //TODO do before....
+        //do before....
         if(!doBefore(method,args)){
             return null;
         }
 
         Object result = method.invoke(realModel,args);
-        //TODO do after...
+        //do after...
         if(!doAfter()){
             return null;
         }
@@ -62,7 +62,7 @@ public class ModelFilter implements InvocationHandler {
 
         if(an != null){
             int type = an.type();
-            //TODO by ouyangjinfu 可扩展
+            //可扩展
             /*if(type % 2 == 1){//验证token
                 if(!validateToken(method,args)){
                     return false;

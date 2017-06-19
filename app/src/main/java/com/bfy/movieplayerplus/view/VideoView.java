@@ -61,7 +61,7 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
     // All the stuff we need for playing and showing a video
     private SurfaceHolder mSurfaceHolder = null;
     private MediaPlayer mMediaPlayer = null;
-    private MediaController mMediaController;
+    private MediaController mMediaController = null;
     
     private boolean     mIsPrepared;
     private int         mVideoWidth;
@@ -299,11 +299,7 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 	        try {
 //	        	begin playing video.........................................
 	        	mDuration = -1;
-//		        mSeekWhenPrepared = (int)readPosition();
-//		        mSeekWhenPrepared = 0;
-//	        	mCurrentBufferPercentage = 0;
 	        	mIsPrepared = false;
-	        	//mStartWhenPrepared = false;
 	            mMediaPlayer = new MediaPlayer();
 	            mMediaPlayer.setOnPreparedListener(mPreparedListener);
 	            mMediaPlayer.setOnVideoSizeChangedListener(mSizeChangedListener);
@@ -327,7 +323,7 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 	    }
 
 	private void setScale(int width , int height){
-			getHolder().setFixedSize(width, height);
+//			getHolder().setFixedSize(width, height);
 			LayoutParams lp = getLayoutParams();
 			lp.height = height;
 			lp.width = width;
