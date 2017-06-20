@@ -52,43 +52,43 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:textSize="14sp"
-            android:text="需求设计:欧阳进夫"/>
+            android:text="需求设计:OuyangJinfu"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:textSize="14sp"
-            android:text="开发人员:欧阳进夫"/>
+            android:text="开发人员:OuyangJinfu"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:textSize="14sp"
-            android:text="团队领袖:欧阳进夫"/>
+            android:text="团队领袖:OuyangJinfu"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:textSize="14sp"
-            android:text="测试人员:欧阳进夫"/>
+            android:text="测试人员:OuyangJinfu"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:textSize="14sp"
-            android:text="技术人员:欧阳进夫"/>
+            android:text="技术人员:OuyangJinfu"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:textSize="14sp"
-            android:text="界面设计:欧阳进夫"/>
+            android:text="界面设计:OuyangJinfu"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:textSize="14sp"
-            android:text="技术支持:欧阳进夫"/>
+            android:text="技术支持:OuyangJinfu"/>
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
