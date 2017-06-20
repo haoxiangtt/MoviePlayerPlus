@@ -15,7 +15,6 @@
  */
 package com.bfy.movieplayerplus.utils;
 
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -49,9 +48,9 @@ import java.util.concurrent.FutureTask;
 public abstract class Platform
 {
     private static final String TAG = "threadpool";
-    private static final boolean DEBUG = true;
-    private static final Platform PLATFORM = findPlatform(false);
-    private static final Platform ANDROID = findPlatform(true);
+    private static final boolean DEBUG = LogUtils.isDebug;
+    private static final Platform CACHE_THREAD_POOL = null;//findPlatform(false);
+    private static final Platform ANDROID_THREAD = null;//findPlatform(true);
 
     public static final int TYPE_CACHE_THREAD_POOL = 0;
     public static final int TYPE_UI_THREAD_POOL = 1;
@@ -63,24 +62,38 @@ public abstract class Platform
 
     public static <T extends Platform> T getInstance(int type)
     {
-//        L.e(PLATFORM.getClass().toString());
+//        L.e(CACHE_THREAD_POOL.getClass().toString());
         if (type == TYPE_UI_THREAD_POOL) {
-            return (T)ANDROID;
+            try {
+                Class.forName("android.os.Build");
+            } catch (ClassNotFoundException e) {
+                if (CACHE_THREAD_POOL == null) {
+                    findPlatform(TYPE_CACHE_THREAD_POOL);
+                }
+                return (T)CACHE_THREAD_POOL;
+            }
+            if (ANDROID_THREAD == null) {
+                findPlatform(type);
+            }
+            return (T) ANDROID_THREAD;
         } else if (type == TYPE_CACHE_THREAD_POOL) {
-            return (T)PLATFORM;
+            if (CACHE_THREAD_POOL == null) {
+                findPlatform(type);
+            }
+            return (T) CACHE_THREAD_POOL;
         } else {
             return null;
         }
     }
 
-    private static Platform findPlatform(boolean isUIThread) {
+    private static Platform findPlatform(int type) {
         try
         {
             Class.forName("android.os.Build");
             if (Build.VERSION.SDK_INT != 0) {
-                if(isUIThread) {
+                if(type == TYPE_UI_THREAD_POOL) {
                     return new Android();
-                } else {
+                } else if (type == TYPE_CACHE_THREAD_POOL){
                     return new CacheThreadPool();
                 }
             }
@@ -110,6 +123,12 @@ public abstract class Platform
 
     public abstract void execute(Runnable runnable, Executor executor, String sessionId);
 
+    public abstract boolean cancel(String sessionId);
+
+
+    /**
+     * 可缓存的线程池
+     */
     public static class CacheThreadPool extends Platform{
 
         public CacheThreadPool(){
@@ -141,6 +160,7 @@ public abstract class Platform
             }
         }
 
+        @Override
         public boolean cancel(String sessionId) {
             if (DEBUG) {
                 LogUtils.e(TAG,"Begin cancel the thread pool by sessionId : " + sessionId);
@@ -206,74 +226,89 @@ public abstract class Platform
     }
 
 
+    /**
+     * ui线程池
+     */
     public static class Android extends Platform {
 
+        private final ConcurrentHashMap<String, Reference<Runnable>> delayRunnableMap;
         public Android(){
             super();
             mDefaultExecutor = new MainThreadExecutor();
+            delayRunnableMap = new ConcurrentHashMap<>();
         }
 
         @Override
         public void execute(Runnable runnable, Executor executor, String sessionId){
-            executor.execute(runnable);
+            Runnable wrapRunnable = getWrapRunnable(runnable, sessionId);
+            executor.execute(wrapRunnable);
         }
 
-        public void executeDelay(Runnable runnable, long delay) {
-            ((MainThreadExecutor)defaultCallbackExecutor()).executeDelay(runnable,delay);
+        public void executeDelay(Runnable runnable, long delay, String sessionId) {
+            Runnable wrapRunnable = getWrapRunnable(runnable, sessionId);
+            ((MainThreadExecutor)defaultCallbackExecutor()).executeDelay(wrapRunnable,delay);
+        }
+        @Override
+        public boolean cancel(String sessionId){
+            if (TextUtils.isEmpty(sessionId)) {
+                return ((MainThreadExecutor) defaultCallbackExecutor()).cancel(null);
+            }
+            Reference<Runnable> reference = delayRunnableMap.get(sessionId);
+            if (reference != null) {
+                Runnable runnable = reference.get();
+                if (runnable != null) {
+                    return ((MainThreadExecutor) defaultCallbackExecutor()).cancel(runnable);
+                }
+            }
+
+            return false;
         }
 
-        public void cancel(Runnable runnable){
-            ((MainThreadExecutor)defaultCallbackExecutor()).cancel(runnable);
+        @NonNull
+        private Runnable getWrapRunnable(final Runnable r, final String sessionId) {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+//                  AsyncTask.execute(r);
+                    r.run();
+                    if (!TextUtils.isEmpty(sessionId)) {
+                        delayRunnableMap.remove(sessionId);
+                    }
+                }
+            };
+            Reference<Runnable> ref = new SoftReference<Runnable>(runnable);
+            if (!TextUtils.isEmpty(sessionId)) {
+                delayRunnableMap.put(sessionId, ref);
+            }
+            return runnable;
         }
 
         protected static class MainThreadExecutor implements Executor
         {
             private final Handler handler;
-            private final ConcurrentHashMap<String, Reference<Runnable>> delayRunnableMap;
             public MainThreadExecutor(){
                 handler = new Handler(Looper.getMainLooper());
-                delayRunnableMap = new ConcurrentHashMap<>();
             }
 
             @Override
             public void execute(final Runnable r) {
-                Runnable runnable = getRunnable(r);
-                handler.post(runnable);
+//                Runnable runnable = getWrapRunnable(r);
+                handler.post(r);
 
             }
 
             public void executeDelay(final Runnable r, final long delay){
-                Runnable delayRunnable = getRunnable(r);
-                handler.postDelayed(delayRunnable, delay);
+//                Runnable delayRunnable = getWrapRunnable(r);
+                handler.postDelayed(r, delay);
             }
 
-            @NonNull
-            private Runnable getRunnable(final Runnable r) {
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-//                        AsyncTask.execute(r);
-                        r.run();
-                        delayRunnableMap.remove(Integer.valueOf(r.hashCode()).toString());
-                    }
-                };
-                Reference<Runnable> ref = new SoftReference<Runnable>(runnable);
-                delayRunnableMap.put(Integer.valueOf(r.hashCode()).toString(), ref);
-                return runnable;
-            }
-
-            public void cancel(Runnable runnable){
+            public boolean cancel(Runnable runnable){
                 if ( runnable != null) {
-                    String key = Integer.valueOf(runnable.hashCode()).toString();
-                    Runnable delayRunnable = delayRunnableMap
-                        .get(key).get();
-                    if (delayRunnable != null) {
-                        handler.removeCallbacks(delayRunnable);
-                        delayRunnableMap.remove(key);
-                    }
+                    handler.removeCallbacks(runnable);
                 } else  {
                     handler.removeCallbacksAndMessages(null);
                 }
+                return true;
             }
         }
     }
