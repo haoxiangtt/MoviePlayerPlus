@@ -15,7 +15,6 @@
  */
 package com.bfy.movieplayerplus.utils;
 
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -49,11 +48,11 @@ public abstract class Platform
 {
     private static final String TAG = "threadpool";
     private static final boolean DEBUG = LogUtils.isDebug;
-    private static final Platform CACHE_THREAD_POOL = null;//findPlatform(false);
-    private static final Platform ANDROID_THREAD = null;//findPlatform(true);
-
     public static final int TYPE_CACHE_THREAD_POOL = 0;
     public static final int TYPE_UI_THREAD_POOL = 1;
+    private static Platform CACHE_THREAD_POOL = findPlatform(TYPE_CACHE_THREAD_POOL);
+    private static Platform ANDROID_THREAD = findPlatform(TYPE_UI_THREAD_POOL);
+
 
     protected Executor mDefaultExecutor;
 
@@ -62,24 +61,14 @@ public abstract class Platform
 
     public static <T extends Platform> T getInstance(int type)
     {
-//        L.e(CACHE_THREAD_POOL.getClass().toString());
         if (type == TYPE_UI_THREAD_POOL) {
             try {
                 Class.forName("android.os.Build");
             } catch (ClassNotFoundException e) {
-                if (CACHE_THREAD_POOL == null) {
-                    findPlatform(TYPE_CACHE_THREAD_POOL);
-                }
                 return (T)CACHE_THREAD_POOL;
-            }
-            if (ANDROID_THREAD == null) {
-                findPlatform(type);
             }
             return (T) ANDROID_THREAD;
         } else if (type == TYPE_CACHE_THREAD_POOL) {
-            if (CACHE_THREAD_POOL == null) {
-                findPlatform(type);
-            }
             return (T) CACHE_THREAD_POOL;
         } else {
             return null;
@@ -90,12 +79,10 @@ public abstract class Platform
         try
         {
             Class.forName("android.os.Build");
-            if (Build.VERSION.SDK_INT != 0) {
-                if(type == TYPE_UI_THREAD_POOL) {
-                    return new Android();
-                } else if (type == TYPE_CACHE_THREAD_POOL){
-                    return new CacheThreadPool();
-                }
+            if(type == TYPE_UI_THREAD_POOL) {
+                return new AndroidThreadPool();
+            } else if (type == TYPE_CACHE_THREAD_POOL){
+                return new CacheThreadPool();
             }
         } catch (ClassNotFoundException ignored) {}
         return new CacheThreadPool();
@@ -229,10 +216,10 @@ public abstract class Platform
     /**
      * ui线程池
      */
-    public static class Android extends Platform {
+    public static class AndroidThreadPool extends Platform {
 
         private final ConcurrentHashMap<String, Reference<Runnable>> delayRunnableMap;
-        public Android(){
+        public AndroidThreadPool(){
             super();
             mDefaultExecutor = new MainThreadExecutor();
             delayRunnableMap = new ConcurrentHashMap<>();
