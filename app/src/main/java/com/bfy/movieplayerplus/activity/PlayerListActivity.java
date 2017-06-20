@@ -2,7 +2,6 @@ package com.bfy.movieplayerplus.activity;
 
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,7 +100,8 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 		pDialog.setMessage("正在搜索");
 
 		lvplayer.setOnItemClickListener(this);
-		if (!PermissionUtils.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+		if (!PermissionUtils.isNeedRequestPermission() ||
+				!PermissionUtils.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
 			data = getData();
 			adapter = new SimpleAdapter(this, data, R.layout.lv_movie_item,
 					new String[]{VIDEO_NAME}, new int[]{R.id.tv_title});
@@ -114,7 +114,8 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 
 	private List<Map<String, String>> getData() {
 		List<Map<String,String>> videoList = new ArrayList<Map<String,String>>();
-		if (PermissionUtils.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+		if (PermissionUtils.isNeedRequestPermission() &&
+				PermissionUtils.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
 			requestPermission();
 			return videoList;
 		}
@@ -131,7 +132,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 				 map.put(VIDEO_NAME, name);
 				 String url = cursor.getString(cursor.getColumnIndex(VIDEO_PATH));
 				 map.put(VIDEO_PATH, url);
-				 map.put(VIDEO_SOURCE, "media_store");
+				 map.put(VIDEO_SOURCE, "local");
 				 videoList.add(map);
 				 cursor.moveToNext();
 			 }
@@ -141,69 +142,75 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 	}
 
 	private void getMV(String key) {
-		if (PermissionUtils.checkSelfPermission(this, Manifest.permission.INTERNET)) {
+		if (PermissionUtils.isNeedRequestPermission() &&
+				PermissionUtils.checkSelfPermission(this, Manifest.permission.INTERNET)) {
 			requestPermission();
 			return;
 		}
-		EventBuilder.Event event = EventBuilder.obtain();
-		event.type = Constant.EVENT_TYPE_MODEL;
-		event.modelKey = Constant.MAIN_MODEL;
-		event.requestId = 0;
-		event.startTime = System.currentTimeMillis();
-		event.target = EventHandler.getInstance();
 		Bundle bundle = new Bundle();
 		bundle.putString("keyword", key);
 		bundle.putString("page", "1");
 		bundle.putString("pagesize", "30");
 		bundle.putString("userid", "-1");
-					bundle.putString("clientver", "");
-					bundle.putString("platform", "WebFilter");
-					bundle.putString("tag", "em");
-					bundle.putString("filter", "2");
-					bundle.putString("iscorrection", "1");
-					bundle.putString("privilege_filter", "0");
-					event.requestBundle = bundle;
-					event.callback = new EventCallback() {
-						@Override
-						public void call(EventBuilder.Event event) {
-							if (pDialog.isShowing()) {
-								pDialog.dismiss();
-				}
-				EventJsonObject result = (EventJsonObject) event.responseData;
-				if (Constant.ResponseCode.CODE_SUCCESSFULLY.equals(result.optString(BaseModel.KEY_RESULT_CODE))) {
-					JSONObject json = result.optJSONObject("json");
-					JSONObject data = json.optJSONObject("data");
-					if (data != null) {
-						JSONArray lists = data.optJSONArray("lists");
-						if (lists != null) {
-							List<Map<String, String>> finalList = new ArrayList<>();
-							for (int i = 0; i < lists.length(); i++) {
-								JSONObject obj = lists.optJSONObject(i);
-								Map<String, String> map = new HashMap<>();
-								String fullName = obj.optString("MvName").replace("<em>", "").replace("</em>", "")
-									+ " - " + obj.optString("Remark");
-								map.put(VIDEO_NAME, fullName);
-								map.put(VIDEO_PATH, obj.optString("MvHash"));
-								map.put(VIDEO_SOURCE, "kugou");
-								finalList.add(map);
-							}
-							PlayerListActivity.this.data = finalList;
-							updateView();
-						}
+		bundle.putString("clientver", "");
+		bundle.putString("platform", "WebFilter");
+		bundle.putString("tag", "em");
+		bundle.putString("filter", "2");
+		bundle.putString("iscorrection", "1");
+		bundle.putString("privilege_filter", "0");
+		EventBuilder.Event event = new EventBuilder()
+			.type(Constant.EVENT_TYPE_MODEL)
+			.key(Constant.MAIN_MODEL)
+			.requestId(0)
+			.startTime(System.currentTimeMillis())
+			.target(EventHandler.getInstance())
+			.requestBundle(bundle)
+			.callback(new EventCallback() {
+				@Override
+				public void call(EventBuilder.Event event) {
+					if (pDialog.isShowing()) {
+						pDialog.dismiss();
 					}
-				} else {
-					Message msg = Message.obtain();
-					msg.what = 0;
-					msg.obj = result.optString(BaseModel.KEY_DESC);
-					mHandler.sendMessage(msg);
+					parseData(event);
 				}
+			}).build();
 
-			}
-		};
 		if (!pDialog.isShowing()) {
 			pDialog.show();
 		}
+
 		event.send();
+	}
+
+	private void parseData(EventBuilder.Event event) {
+		EventJsonObject result = (EventJsonObject) event.responseData;
+		if (Constant.ResponseCode.CODE_SUCCESSFULLY.equals(result.optString(BaseModel.KEY_RESULT_CODE))) {
+            JSONObject json = result.optJSONObject("json");
+            JSONObject data = json.optJSONObject("data");
+            if (data != null) {
+                JSONArray lists = data.optJSONArray("lists");
+                if (lists != null) {
+                    List<Map<String, String>> finalList = new ArrayList<>();
+                    for (int i = 0; i < lists.length(); i++) {
+                        JSONObject obj = lists.optJSONObject(i);
+                        Map<String, String> map = new HashMap<>();
+                        String fullName = obj.optString("MvName").replace("<em>", "").replace("</em>", "")
+                                + " - " + obj.optString("Remark");
+                        map.put(VIDEO_NAME, fullName);
+                        map.put(VIDEO_PATH, obj.optString("MvHash"));
+                        map.put(VIDEO_SOURCE, "kugou");
+                        finalList.add(map);
+                    }
+                    PlayerListActivity.this.data = finalList;
+                    updateView();
+                }
+            }
+        } else {
+            Message msg = Message.obtain();
+            msg.what = 0;
+            msg.obj = result.optString(BaseModel.KEY_DESC);
+            mHandler.sendMessage(msg);
+        }
 	}
 
 	private void updateView() {
@@ -220,73 +227,79 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 			getMVRealUrl(item);
 		} else {
 			Intent intent = new Intent(this, VideoPlayerActivity.class);
-			Uri uri = null;
-			uri = Uri.parse("file://" + item.get(VIDEO_PATH));
+			Uri uri = Uri.parse("file://" + item.get(VIDEO_PATH));
 			intent.setDataAndType(uri, "video/*");
-			EventBuilder.Event ev = EventBuilder.obtain();
-			ev.type = Constant.EVENT_TYPE_CONTEXT;
-			ev.requestId = ContextReceiver.TYPE_GO_ACTIVITY;
-			ev.requestBundle = new Bundle();
-			ev.requestBundle.putParcelable(ContextReceiver.KEY_INTENT, intent);
-			ev.target = EventHandler.getInstance();
-			ev.reference = new WeakReference<Context>(PlayerListActivity.this);
-			ev.send();
+			Bundle bundle = new Bundle();
+			bundle.putParcelable(ContextReceiver.KEY_INTENT, intent);
+			new EventBuilder()
+				.type(Constant.EVENT_TYPE_CONTEXT)
+				.requestId(ContextReceiver.REQUEST_GO_ACTIVITY)
+				.target(EventHandler.getInstance())
+				.reference(new WeakReference<Context>(PlayerListActivity.this))
+				.requestBundle(bundle)
+				.build().send();
 //			startActivity(intent);
 		}
 	}
 
 	private void getMVRealUrl(Map<String, String> item) {
-		if (PermissionUtils.checkSelfPermission(this, Manifest.permission.INTERNET)) {
+		if (PermissionUtils.isNeedRequestPermission() &&
+				PermissionUtils.checkSelfPermission(this, Manifest.permission.INTERNET)) {
 			requestPermission();
 			return;
 		}
-		EventBuilder.Event ev = EventBuilder.obtain();
-		ev.type = Constant.EVENT_TYPE_MODEL;
-		ev.modelKey = Constant.MAIN_MODEL;
-		ev.requestId = 1;
-		ev.requestBundle = new Bundle();
-		ev.requestBundle.putString("url", item.get(VIDEO_PATH));
-		ev.startTime = System.currentTimeMillis();
-		ev.target = EventHandler.getInstance();
-		ev.callback = new EventCallback() {
-            @Override
-            public void call(EventBuilder.Event event) {
-                if (pDialog.isShowing()) {
-                    pDialog.dismiss();
-                }
-                EventJsonObject result = (EventJsonObject) event.responseData;
-                if (Constant.ResponseCode.CODE_SUCCESSFULLY.equals(
-                        result.optString(BaseModel.KEY_RESULT_CODE))) {
-                    EventJsonObject json = (EventJsonObject) result.optJSONObject("json");
-                    JSONObject mvdata = json.optJSONObject("mvdata");
-                    if (mvdata != null) {
-                        JSONObject sd = mvdata.optJSONObject("sd");
-                        if (sd != null) {
-                            String realUrl = sd.optString("downurl");
-                            if (!TextUtils.isEmpty(realUrl)) {
-                                EventBuilder.Event ev2 = EventBuilder.obtain();
-                                ev2.type = Constant.EVENT_TYPE_CONTEXT;
-                                ev2.requestId = ContextReceiver.TYPE_GO_ACTIVITY;
-                                ev2.requestBundle = new Bundle();
-                                Intent intent = new Intent(PlayerListActivity.this, VideoPlayerActivity.class);
-                                Uri uri = Uri.parse(realUrl);
-                                intent.setDataAndType(uri, "video/*");
-                                ev2.requestBundle.putParcelable(ContextReceiver.KEY_INTENT, intent);
-                                ev2.target = EventHandler.getInstance();
-                                ev2.reference = new WeakReference<Context>(PlayerListActivity.this);
-                                ev2.send();
-                            }
-                        }
-                    }
-                }
-
-
-            }
-        };
 		if (!pDialog.isShowing()) {
-            pDialog.show();
+			pDialog.show();
+		}
+		Bundle bundle = new Bundle();
+		bundle.putString("url", item.get(VIDEO_PATH));
+		new EventBuilder()
+			.type(Constant.EVENT_TYPE_MODEL)
+			.key(Constant.MAIN_MODEL)
+			.requestId(1)
+			.startTime(System.currentTimeMillis())
+			.target(EventHandler.getInstance())
+			.requestBundle(bundle)
+			.callback(new EventCallback() {
+				@Override
+				public void call(EventBuilder.Event event) {
+					if (pDialog.isShowing()) {
+						pDialog.dismiss();
+					}
+					EventJsonObject result = (EventJsonObject) event.responseData;
+					if (Constant.ResponseCode.CODE_SUCCESSFULLY.equals(
+							result.optString(BaseModel.KEY_RESULT_CODE))) {
+						EventJsonObject json = (EventJsonObject) result.optJSONObject("json");
+						JSONObject mvdata = json.optJSONObject("mvdata");
+						if (mvdata != null) {
+							JSONObject sd = mvdata.optJSONObject("sd");
+							if (sd != null) {
+								String realUrl = sd.optString("downurl");
+								goPlayerActivity(realUrl);
+							}
+						}
+					}
+
+
+				}
+			}).build().send();
+	}
+
+	private void goPlayerActivity(String realUrl) {
+		if (!TextUtils.isEmpty(realUrl)) {
+			Bundle bundle = new Bundle();
+			Intent intent = new Intent(PlayerListActivity.this, VideoPlayerActivity.class);
+			Uri uri = Uri.parse(realUrl);
+			intent.setDataAndType(uri, "video/*");
+			bundle.putParcelable(ContextReceiver.KEY_INTENT, intent);
+            new EventBuilder()
+				.type(Constant.EVENT_TYPE_CONTEXT)
+				.requestId(ContextReceiver.REQUEST_GO_ACTIVITY)
+				.target(EventHandler.getInstance())
+				.reference(new WeakReference<Context>(PlayerListActivity.this))
+				.requestBundle(bundle)
+				.build().send();
         }
-		ev.send();
 	}
 
 	@Override

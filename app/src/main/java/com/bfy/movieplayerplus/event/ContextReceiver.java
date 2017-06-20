@@ -33,9 +33,9 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
 
     private static final String TAG = "ContextReceiver";
 
-    public static final int TYPE_GO_ACTIVITY = 0;
-    public static final int TYPE_SEND_BROADCAST = 1;
-    public static final int TYPE_START_SERVICE = 2;
+    public static final int REQUEST_GO_ACTIVITY = 0;
+    public static final int REQUEST_SEND_BROADCAST = 1;
+    public static final int REQUEST_START_SERVICE = 2;
 
 
     //如果调用startActivityForResult,则此项设置为true
@@ -175,15 +175,15 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
     @Override
     public void onReceive(EventBuilder.Event event) {
         switch (event.requestId) {
-            case TYPE_GO_ACTIVITY : {
+            case REQUEST_GO_ACTIVITY: {
                 goActivity(event);
                 break;
             }
-            case TYPE_SEND_BROADCAST : {
+            case REQUEST_SEND_BROADCAST: {
                 sendBroadcast(event);
                 break;
             }
-            case TYPE_START_SERVICE : {
+            case REQUEST_START_SERVICE: {
                 startService(event);
                 break;
             }

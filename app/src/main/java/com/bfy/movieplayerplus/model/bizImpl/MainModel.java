@@ -113,7 +113,7 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
                     } else {
                         EventJsonObject response = new EventJsonObject();
                         response.put(KEY_RESULT_CODE, Constant.ResponseCode.CODE_DATA_ERROR);
-                        response.put(KEY_DESC, "json对象转换错误");
+                        response.put(KEY_DESC, "服务器连接错误");
                         response.put(KEY_URL, url);
                     }
 
@@ -205,7 +205,7 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
 
     @Override
     public void onReceive(EventBuilder.Event event) {
-        MainBiz model = ModelFactory.getInstance().getModelProxy(event.modelKey);
+        MainBiz model = ModelFactory.getInstance().getModelProxy(event.key);
         if (event.requestId == 0) {
             model.getMV(event);
         } else if (event.requestId == 1) {

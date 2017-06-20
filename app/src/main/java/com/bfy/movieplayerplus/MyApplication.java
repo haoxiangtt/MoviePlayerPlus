@@ -35,6 +35,7 @@ public class MyApplication extends Application {
         //注册业务模型
         ModelFactory.getInstance().registModelProxy(this, MainModel.class, Constant.MAIN_MODEL);
 
+        //必须注册分发器和业务类才能使用Event机制
         //将业务模型工厂注册到事件处理工厂中
         EventFactory.getEventRegisterFactory().registRegister(Constant.EVENT_TYPE_MODEL, ModelFactory.getRegister());
         EventFactory.getEventRegisterFactory().registRegister(Constant.EVENT_TYPE_CONTEXT, ContextReceiver.getRegisterInstance());

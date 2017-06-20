@@ -34,6 +34,8 @@ public class EventHandler {
             .getEventDispatcher(event);
         if (dispatcher != null) {
             dispatcher.dispatch(event);
+        } else {
+            new BaseEventDispatcher().dispatch(event);
         }
     }
 

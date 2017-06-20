@@ -28,7 +28,7 @@ public class NetworkState {
 
 	public static final String TAG="NetworkState";
 	
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = LogUtils.isDebug;
 
 	private static NetworkState state;
 

@@ -3,8 +3,8 @@ package com.bfy.movieplayerplus.event;
 
 import org.json.JSONException;
 
+import com.bfy.movieplayerplus.event.base.BaseEventDispatcher;
 import com.bfy.movieplayerplus.event.base.EventBuilder;
-import com.bfy.movieplayerplus.event.base.EventDispatcher;
 import com.bfy.movieplayerplus.event.base.EventFactory;
 import com.bfy.movieplayerplus.event.base.EventReceiver;
 import com.bfy.movieplayerplus.event.base.EventRegister;
@@ -26,11 +26,41 @@ import com.bfy.movieplayerplus.utils.Constant;
  * </pre>
  */
 
-public class DefaultEventDispatcher implements EventDispatcher {
+public class DefaultEventDispatcher extends BaseEventDispatcher {
 
 
     public DefaultEventDispatcher(){
 
+    }
+
+    @Override
+    public void onError(EventBuilder.Event event, int errorType) {
+        if (errorType == DISPATCHER_ERROR_NULL_REGISTER) {
+            if (event.callback != null) {
+                EventJsonObject result = new EventJsonObject();
+                try {
+                    result.put(BaseModel.KEY_RESULT_CODE, Constant.ResponseCode.CODE_MODEL_UNREGIST);
+                    result.put(BaseModel.KEY_DESC, "业务工厂(" + event.type + ")未注册，" +
+                            "无法正常使用!");
+                    event.callback.call(event);
+                } catch (JSONException e) {
+                    LogUtils.e(TAG, e.getMessage());
+                }
+            }
+        } else if (errorType == DISPATCHER_ERROR_NULL_RECEIVER) {
+            if (event.callback != null) {
+                //to do by ouyangjinfu 已经实现
+                EventJsonObject result = new EventJsonObject();
+                try {
+                    result.put(BaseModel.KEY_RESULT_CODE, Constant.ResponseCode.CODE_MODEL_UNREGIST);
+                    result.put(BaseModel.KEY_DESC, "业务接收者(" + event.key + ")未注册，" +
+                            "无法正常使用!");
+                    event.callback.call(event);
+                } catch (JSONException e) {
+                    LogUtils.e(TAG, e.getMessage());
+                }
+            }
+        }
     }
 
     @Override
@@ -39,31 +69,12 @@ public class DefaultEventDispatcher implements EventDispatcher {
             .getRegister(event.type);
         if (register == null) {
             //to do by ouyangjinfu 已经实现
-            EventJsonObject result = new EventJsonObject();
-            try {
-                result.put(BaseModel.KEY_RESULT_CODE, Constant.ResponseCode.CODE_MODEL_UNREGIST);
-                result.put(BaseModel.KEY_DESC, "业务工厂(" + event.type + ")未注册，" +
-                        "无法正常使用!");
-                event.callback.call(event);
-            } catch (JSONException e) {
-                LogUtils.e(TAG, e.getMessage());
-            }
+
             return;
         }
-        final EventReceiver receiver = register.getReceiver(event.modelKey);
+        final EventReceiver receiver = register.getReceiver(event.key);
         if ( receiver == null) {
-            if (event.callback != null) {
-                //to do by ouyangjinfu 已经实现
-                EventJsonObject result = new EventJsonObject();
-                try {
-                    result.put(BaseModel.KEY_RESULT_CODE, Constant.ResponseCode.CODE_MODEL_UNREGIST);
-                    result.put(BaseModel.KEY_DESC, "业务" + event.modelKey + "未注册，" +
-                        "无法正常使用!");
-                    event.callback.call(event);
-                } catch (JSONException e) {
-                    LogUtils.e(TAG, e.getMessage());
-                }
-            }
+
             return;
         }
         Platform.getInstance(Platform.TYPE_UI_THREAD_POOL).execute(new Runnable() {

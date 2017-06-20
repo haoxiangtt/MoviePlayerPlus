@@ -26,13 +26,69 @@ import java.util.Map;
 
 public class EventBuilder {
 
-    public static final Event obtain(){
+    private Event mEvent;
+
+    public EventBuilder() {
+        mEvent = obtain();
+    }
+
+    protected final Event obtain(){
         return Event.obtain();
     }
 
     public static final void release(Event ev){
         ev.release();
     }
+
+    public EventBuilder type(int type) {
+        mEvent.type = type;
+        return this;
+    }
+
+    public EventBuilder key(String key) {
+        mEvent.key = key;
+        return this;
+    }
+
+    public EventBuilder requestId(int requestId) {
+        mEvent.requestId = requestId;
+        return this;
+    }
+
+    public EventBuilder sessionId(String sessionId) {
+        mEvent.sessionId = sessionId;
+        return this;
+    }
+
+    public EventBuilder requestBundle(Bundle bundle) {
+        mEvent.requestBundle = bundle;
+        return this;
+    }
+
+    public EventBuilder reference(Reference<Context> reference) {
+        mEvent.reference = reference;
+        return this;
+    }
+
+    public EventBuilder target(EventHandler handler) {
+        mEvent.target = handler;
+        return this;
+    }
+
+    public EventBuilder callback(EventCallback callback) {
+        mEvent.callback = callback;
+        return this;
+    }
+
+    public EventBuilder startTime(long time) {
+        mEvent.startTime = time;
+        return this;
+    }
+
+    public Event build() {
+        return mEvent;
+    }
+
 
     /**
      * 事件源
@@ -76,7 +132,7 @@ public class EventBuilder {
         protected void clear(){
             type = 0;
             requestId = 0;
-            modelKey = "";
+            key = "";
             sessionId = "";
             requestBundle = null;
             responseData = null;
@@ -88,10 +144,10 @@ public class EventBuilder {
         /****************************************************************/
 
         private static final Map<String,Object> parcelMap = new HashMap<>();
-        public int type;
-        public int requestId;
-        public String modelKey = "";
-        public String sessionId = "";//唯一标识
+        public int type;//业务工厂(Register)类型标识
+        public String key = "";//接收器标识
+        public int requestId;//接收器处理请求id
+        public String sessionId = "";//回话ID
         public long startTime = 0;
         public long endTime = 0;
         public Bundle requestBundle;//请求参数
@@ -109,16 +165,15 @@ public class EventBuilder {
 
         protected Event(Parcel in) {
             type = in.readInt();
+            key = in.readString();
             requestId = in.readInt();
-            modelKey = in.readString();
             sessionId = in.readString();
             startTime = in.readLong();
             endTime = in.readLong();
             requestBundle = in.readBundle();
-//            try {
-//                responseData = new JSONObject(in.readString());
-//            } catch (JSONException e) {}
             responseData = in.readParcelable(responseData.getClass().getClassLoader());
+            isSent = Boolean.valueOf(in.readString()).booleanValue();
+
             Object obj = null;
             if (!TextUtils.isEmpty(sessionId)) {
                 obj = parcelMap.get(sessionId);
@@ -127,7 +182,6 @@ public class EventBuilder {
                 callback = (EventCallback)
                 parcelMap.remove(sessionId);
             }
-            isSent = false;
         }
 
         public static final Creator<Event> CREATOR = new Creator<Event>() {
@@ -151,14 +205,14 @@ public class EventBuilder {
         public void writeToParcel(Parcel parcel, int i) {
 
             parcel.writeInt(type);
+            parcel.writeString(key);
             parcel.writeInt(requestId);
-            parcel.writeString(modelKey);
             parcel.writeString(sessionId);
             parcel.writeLong(startTime);
             parcel.writeLong(endTime);
             parcel.writeBundle(requestBundle);
-//            parcel.writeString(responseData.toString());
             parcel.writeParcelable(responseData, i);
+            parcel.writeString(Boolean.valueOf(isSent).toString());
             if (!TextUtils.isEmpty(sessionId)) {
                 parcelMap.put(sessionId, callback);
             }
@@ -166,7 +220,7 @@ public class EventBuilder {
 
         public void send(){
             if (target == null) {
-                throw new NullPointerException("EventHandler is null!");
+                throw new NullPointerException("target is null!");
             }
             if (isSent) {
                 //一次事件只能发送一次，发送多次抛出异常，如需要重复发送同样事件，可以调用
@@ -180,8 +234,8 @@ public class EventBuilder {
         public Event copy(){
             Event ev = new Event();
             ev.type = type;
+            ev.key = key;
             ev.requestId = requestId;
-            ev.modelKey = modelKey;
             ev.sessionId = sessionId;
             ev.requestBundle = requestBundle;
 //            ev.responseData = responseData;
@@ -189,6 +243,8 @@ public class EventBuilder {
             ev.reference = reference;
             ev.target = target;
             ev.isSent = false;
+            ev.startTime = startTime;
+            ev.endTime = endTime;
             return ev;
         }
 
@@ -198,10 +254,12 @@ public class EventBuilder {
                     "next=" + next +
                     ", type=" + type +
                     ", requestId=" + requestId +
-                    ", modelKey='" + modelKey + '\'' +
+                    ", key='" + key + '\'' +
                     ", sessionId='" + sessionId + '\'' +
                     ", requestBundle=" + requestBundle.toString() +
                     ", responseData=" + responseData.toString() +
+                    ", startTime=" + startTime +
+                    ", endTime=" + endTime +
                     ", callback=" + callback +
                     ", reference=" + reference +
                     ", isSent=" + isSent +
