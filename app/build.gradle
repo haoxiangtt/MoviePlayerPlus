@@ -1,0 +1,84 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+
+    defaultConfig {
+        applicationId "com.bfy.movieplayerplus"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+         ndk {
+            //选择要添加的对应cpu类型的.so库。
+            abiFilters 'x86_64', 'armeabi-v7a', 'arm64-v8a'
+            // 还可以添加 'armeabi', 'x86', 'mips', 'mips64'
+        }
+
+    }
+
+    productFlavors{
+        vlc{
+            versionCode 2
+            versionName '1.1.1'
+        }
+    }
+
+    buildTypes {
+
+        debug {
+            debuggable true
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            debuggable false
+            minifyEnabled true
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+            java.srcDirs = ['src/main/java']
+            res.srcDirs = ['src/main/res']
+            resources.srcDirs = ['src/main/java']
+            aidl.srcDirs = ['src/main/java']
+            renderscript.srcDirs = ['src/main/java']
+            assets.srcDirs = ['src/main/assets']
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+
+        vlc {
+            manifest.srcFile 'src/vlc/AndroidManifest.xml'
+            java.srcDirs = ['src/vlc/java']
+            res.srcDirs = ['src/vlc/res']
+            resources.srcDirs = ['src/vlc/java']
+            aidl.srcDirs = ['src/vlc/java']
+            renderscript.srcDirs = ['src/vlc/java']
+            assets.srcDirs = ['src/vlc/assets']
+            jniLibs.srcDirs = ['src/vlc/jniLibs']
+        }
+
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    useLibrary 'org.apache.http.legacy'
+
+}
+
+dependencies {
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:support-v4:25.3.1'
+    //    compile 'com.yyl.vlc:vlc-android-sdk:1.1.0'
+    compile 'de.mrmaffen:vlc-android-sdk:3.0.0'
+}
