@@ -1,7 +1,6 @@
 package com.bfy.movieplayerplus;
 
 import android.app.Application;
-
 import com.bfy.movieplayerplus.event.ContextEventDispatcher;
 import com.bfy.movieplayerplus.event.ContextReceiver;
 import com.bfy.movieplayerplus.event.DefaultEventDispatcher;
