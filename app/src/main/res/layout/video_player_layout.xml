@@ -4,9 +4,9 @@
     android:layout_height="match_parent">
 	    <!-- 银幕 -->
 	   <FrameLayout
-		   android:id="@+id/player_screen"
-	        android:background="#FF000000"
-    		android:layout_width="match_parent"
+			android:id="@+id/player_screen"
+			android:background="#FF000000"
+			android:layout_width="match_parent"
     		android:layout_height="match_parent">
 		    <com.bfy.movieplayerplus.view.VideoView
 		    	android:id="@+id/def_video"
@@ -16,8 +16,8 @@
 	        	android:visibility="gone"/>
 		   <com.bfy.movieplayerplus.view.VLCVideoView
 			   android:id="@+id/pv_video"
-			   android:layout_width="match_parent"
-			   android:layout_height="match_parent"
+			   android:layout_width="wrap_content"
+			   android:layout_height="wrap_content"
 			   android:layout_gravity="center"
 			   android:visibility="gone"/>
 	    </FrameLayout>

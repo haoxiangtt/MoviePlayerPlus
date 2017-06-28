@@ -6,13 +6,17 @@ package com.bfy.movieplayerplus.event.base;
  * @company    : XXXXXXXXXXXXXXXXX
  * @author     : OuyangJinfu
  * @e-mail     : jinfu123.-@163.com
- * @createDate : 2017/4/18
- * @modifyDate : 2017/4/18
- * version     : 1.0
- * @desc       : 事件回调接口
+ * @createDate : 2017/6/28 0028
+ * @modifyDate : 2017/6/28 0028
+ * @version    : 1.0
+ * @desc       : 订阅接口，用于查看订阅情况
  * </pre>
  */
 
-public interface EventCallback<T> {
-    void call(EventBuilder.Event<T> event);
+public interface Subscription {
+
+    void unsubscribe();
+
+    boolean isUnsubscribed();
+
 }

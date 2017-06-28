@@ -205,7 +205,7 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
 
     @Override
     public void onReceive(EventBuilder.Event event) {
-        MainBiz model = ModelFactory.getInstance().getModelProxy(event.key);
+        MainBiz model = ModelFactory.getInstance().getModelProxy(event.ReceiverKey);
         if (event.requestId == 0) {
             model.getMV(event);
         } else if (event.requestId == 1) {

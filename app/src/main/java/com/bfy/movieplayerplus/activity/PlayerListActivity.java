@@ -45,6 +45,7 @@ import com.bfy.movieplayerplus.event.EventJsonObject;
 import com.bfy.movieplayerplus.event.base.EventBuilder;
 import com.bfy.movieplayerplus.event.base.EventCallback;
 import com.bfy.movieplayerplus.event.base.EventHandler;
+import com.bfy.movieplayerplus.event.base.Schedulers;
 import com.bfy.movieplayerplus.model.base.BaseModel;
 import com.bfy.movieplayerplus.utils.Constant;
 import com.bfy.movieplayerplus.utils.PermissionUtils;
@@ -158,22 +159,24 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 		bundle.putString("filter", "2");
 		bundle.putString("iscorrection", "1");
 		bundle.putString("privilege_filter", "0");
-		EventBuilder.Event event = new EventBuilder()
+		EventBuilder.Event<EventJsonObject> event = new EventBuilder()
 			.type(Constant.EVENT_TYPE_MODEL)
 			.key(Constant.MAIN_MODEL)
 			.requestId(0)
 			.startTime(System.currentTimeMillis())
 			.target(EventHandler.getInstance())
 			.requestBundle(bundle)
-			.callback(new EventCallback() {
+			.callback(new EventCallback<EventJsonObject>() {
 				@Override
-				public void call(EventBuilder.Event event) {
+				public void call(EventBuilder.Event<EventJsonObject> event) {
 					if (pDialog.isShowing()) {
 						pDialog.dismiss();
 					}
 					parseData(event);
 				}
-			}).build();
+			}).subscribeOn(Schedulers.cache())
+			.observeOn(Schedulers.ui())
+			.build();
 
 		if (!pDialog.isShowing()) {
 			pDialog.show();
@@ -182,8 +185,8 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 		event.send();
 	}
 
-	private void parseData(EventBuilder.Event event) {
-		EventJsonObject result = (EventJsonObject) event.responseData;
+	private void parseData(EventBuilder.Event<EventJsonObject> event) {
+		EventJsonObject result = event.responseData;
 		if (Constant.ResponseCode.CODE_SUCCESSFULLY.equals(result.optString(BaseModel.KEY_RESULT_CODE))) {
             JSONObject json = result.optJSONObject("json");
             JSONObject data = json.optJSONObject("data");
@@ -237,6 +240,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 				.target(EventHandler.getInstance())
 				.reference(new WeakReference<Context>(PlayerListActivity.this))
 				.requestBundle(bundle)
+				.subscribeOn(Schedulers.ui())
 				.build().send();
 //			startActivity(intent);
 		}
@@ -260,13 +264,13 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 			.startTime(System.currentTimeMillis())
 			.target(EventHandler.getInstance())
 			.requestBundle(bundle)
-			.callback(new EventCallback() {
+			.callback(new EventCallback<EventJsonObject>() {
 				@Override
-				public void call(EventBuilder.Event event) {
+				public void call(EventBuilder.Event<EventJsonObject> event) {
 					if (pDialog.isShowing()) {
 						pDialog.dismiss();
 					}
-					EventJsonObject result = (EventJsonObject) event.responseData;
+					EventJsonObject result = event.responseData;
 					if (Constant.ResponseCode.CODE_SUCCESSFULLY.equals(
 							result.optString(BaseModel.KEY_RESULT_CODE))) {
 						EventJsonObject json = (EventJsonObject) result.optJSONObject("json");
@@ -282,7 +286,9 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 
 
 				}
-			}).build().send();
+			}).subscribeOn(Schedulers.cache())
+			.observeOn(Schedulers.ui())
+			.build().send();
 	}
 
 	private void goPlayerActivity(String realUrl) {
@@ -298,6 +304,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 				.target(EventHandler.getInstance())
 				.reference(new WeakReference<Context>(PlayerListActivity.this))
 				.requestBundle(bundle)
+				.subscribeOn(Schedulers.ui())
 				.build().send();
         }
 	}

@@ -24,18 +24,31 @@ public class EventHandler {
         return mInstance;
     }
 
-    public void send(EventBuilder.Event event){
+    public Subscription send(EventBuilder.Event event){
         event.target = this;
-        event.send();
+        if (event.isSent) {
+            //一次事件只能发送一次，发送多次抛出异常，如需要重复发送同样事件，可以调用
+            //event.copy()复制一个新的event对象再重新发送
+            throw new EventAlreadySentException("event repeat send,the event object connot send repeatedly!");
+        }
+        Subscription subscription = handleEvent(event);
+        event.isSent = true;
+        return subscription;
     }
 
-    public void handleEvent(EventBuilder.Event event){
-        EventDispatcher dispatcher = EventFactory.getEventDispatcherFactory()
-            .getEventDispatcher(event);
-        if (dispatcher != null) {
-            dispatcher.dispatch(event);
+    protected Subscription handleEvent(EventBuilder.Event event){
+
+        EventDispatcher dispatcher;
+        if (event.getDispatcher() != null) {
+            dispatcher = event.getDispatcher();
         } else {
-            new BaseEventDispatcher().dispatch(event);
+            dispatcher = EventFactory.getEventDispatcherFactory()
+                    .getEventDispatcher(event);
+        }
+        if (dispatcher != null) {
+            return dispatcher.dispatch(event);
+        } else {
+            return new BaseEventDispatcher().dispatch(event);
         }
     }
 

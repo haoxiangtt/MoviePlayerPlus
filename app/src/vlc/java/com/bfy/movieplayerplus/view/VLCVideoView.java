@@ -38,7 +38,6 @@ import java.util.ArrayList;
  * @desc       :
  * </pre>
  */
-
 public class VLCVideoView extends SurfaceView implements MediaPlayerController{
 
     private static final boolean DEBUG = LogUtils.isDebug;
@@ -327,11 +326,12 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
     }
 
     private void setScale(int width , int height){
+//        modify bu ouyangjinfu, don't fix size
 //        getHolder().setFixedSize(width, height);
-        ViewGroup.LayoutParams lp = getLayoutParams();
-        lp.height = height;
-        lp.width = width;
-        setLayoutParams(lp);
+//        ViewGroup.LayoutParams lp = getLayoutParams();
+//        lp.height = height;
+//        lp.width = width;
+//        setLayoutParams(lp);
     }
 
     private int[] adjustScale(int cw,int ch,int vw,int vh){

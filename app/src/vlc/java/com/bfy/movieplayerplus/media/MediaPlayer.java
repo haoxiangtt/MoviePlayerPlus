@@ -42,6 +42,18 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * <pre>
+ * @copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
+ * @company    : XXXXXXXXXXXXXXXXX
+ * @author     : OuyangJinfu
+ * @e-mail     : jinfu123.-@163.com
+ * @createDate : 2017/6/9 0009
+ * @modifyDate : 2017/6/9 0009
+ * @version    : 1.0
+ * @desc       : vlc Mediaplayer 封装
+ * </pre>
+ */
 public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListener
 {
     public static final int MEDIA_ERROR_UNKNOWN = 1;
@@ -527,7 +539,7 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
 //            case org.videolan.libvlc.MediaPlayer.Event.MediaChanged:
             case org.videolan.libvlc.MediaPlayer.Event.Stopped:
             case org.videolan.libvlc.MediaPlayer.Event.EndReached:{
-                Log.i(TAG, ">>>>receive Event , action: stoped / end;type = " + event.type
+                Log.i(TAG, ">>>>receive Event , action: stoped / end;registerType = " + event.type
                     + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
                 stayAwake(false);
                 if ( mCompleteListener != null) {
@@ -536,7 +548,7 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
                 break;
             }
             case org.videolan.libvlc.MediaPlayer.Event.EncounteredError:{
-                Log.i(TAG, ">>>>receive Event , action: EncounteredError;type = " + event.type
+                Log.i(TAG, ">>>>receive Event , action: EncounteredError;registerType = " + event.type
                     + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
                 stayAwake(false);
                 if (mErrorListener != null) {
@@ -545,7 +557,7 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
                 break;
             }
             case org.videolan.libvlc.MediaPlayer.Event.Opening:{
-                Log.i(TAG, ">>>>receive Event , action: Opening;type = " + event.type
+                Log.i(TAG, ">>>>receive Event , action: Opening;registerType = " + event.type
                     + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
                 /*if (mPrepareListener != null) {
                     mPrepareListener.onPrepared(this);
@@ -560,22 +572,22 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
             }*/
             case org.videolan.libvlc.MediaPlayer.Event.Playing:
             case org.videolan.libvlc.MediaPlayer.Event.Paused: {
-                Log.i(TAG, ">>>>receive Event , action: Playing / Paused;type = " + event.type
+                Log.i(TAG, ">>>>receive Event , action: Playing / Paused;registerType = " + event.type
                     + ";arg1 = " +event.getTimeChanged() + ";arg2 = " + event.getPositionChanged());
                 break;
             }
             case org.videolan.libvlc.MediaPlayer.Event.TimeChanged: {
-                Log.i(TAG, ">>>>receive Event , action: TimeChanged;type = " + event.type
+                Log.i(TAG, ">>>>receive Event , action: TimeChanged;registerType = " + event.type
                     + ";arg1 = " +event.getTimeChanged() + ";arg2 = " + event.getPositionChanged());
                 break;
             }
             case org.videolan.libvlc.MediaPlayer.Event.PositionChanged: {
-                Log.i(TAG, ">>>>receive Event , action: PositionChanged;type = " + event.type
+                Log.i(TAG, ">>>>receive Event , action: PositionChanged;registerType = " + event.type
                     + ";arg1 = " +event.getTimeChanged() + ";arg2 = " + event.getPositionChanged());
                 break;
             }
             case org.videolan.libvlc.MediaPlayer.Event.Vout: {
-                Log.i(TAG, ">>>>receive Event; action: Vout; type = " + event.type
+                Log.i(TAG, ">>>>receive Event; action: Vout; registerType = " + event.type
                         + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
                 break;
             }
@@ -583,12 +595,12 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
             case org.videolan.libvlc.MediaPlayer.Event.ESDeleted:
             case org.videolan.libvlc.MediaPlayer.Event.SeekableChanged:
             case org.videolan.libvlc.MediaPlayer.Event.PausableChanged: {
-                Log.i(TAG, ">>>>receive Event , action: ESAdded / ESDeleted / SeekableChanged / PausableChanged; type = "
+                Log.i(TAG, ">>>>receive Event , action: ESAdded / ESDeleted / SeekableChanged / PausableChanged; registerType = "
                     + event.type + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
                 break;
             }
             default: {
-                Log.i(TAG, ">>>>receive Event , action: unknown;type = " + event.type
+                Log.i(TAG, ">>>>receive Event , action: unknown;registerType = " + event.type
                     + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
             }
         }

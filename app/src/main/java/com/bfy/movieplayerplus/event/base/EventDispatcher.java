@@ -15,5 +15,5 @@ package com.bfy.movieplayerplus.event.base;
 
 public interface EventDispatcher {
     String TAG = "Event";
-    void dispatch(EventBuilder.Event event);
+    Subscription dispatch(EventBuilder.Event event);
 }

@@ -74,7 +74,7 @@ public class EventFactory implements EventDispatcherFactory,
 
     @Override
     public EventDispatcher getEventDispatcher(EventBuilder.Event event) {
-        EventDispatcher dispatcher = dispatcherMap.get(event.type);
+        EventDispatcher dispatcher = dispatcherMap.get(event.registerType);
         return dispatcher != null ? dispatcher : mDispatcher;
     }
 

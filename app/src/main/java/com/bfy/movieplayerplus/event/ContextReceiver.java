@@ -23,7 +23,7 @@ import com.bfy.movieplayerplus.utils.LogUtils;
  * @createDate : 2017/4/19
  * @modifyDate : 2017/4/19
  * @version    : 1.0
- * @desc       : 页面跳转、广播发送、服务开启的模型（核心业务模型）
+ * @desc       : android上下文接收器兼注册器；页面跳转、广播发送、服务开启的模型（核心业务模型）
  * </pre>
  */
 
@@ -95,7 +95,7 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
                             " Activity,so cannot invoke startActivityForResult method.");
                 }
             } else {
-                ev.reference.get().startActivity(intent);
+                ((Context)ev.reference.get()).startActivity(intent);
             }
         } else {
             LogUtils.e(TAG, "ev.reference is null or ev.reference.get() is null,cannot start activity!");
@@ -110,10 +110,10 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
         Intent intent = getIntent(ev);
         if (ev.reference != null && ev.reference.get() != null) {
             if (ev.requestBundle.getBoolean(KEY_LOCAL_BROACAST, false)) {
-                LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(ev.reference.get());
+                LocalBroadcastManager lbm = LocalBroadcastManager.getInstance((Context)ev.reference.get());
                 lbm.sendBroadcast(intent);
             } else {
-                Context context = ev.reference.get();
+                Context context = ((Context)ev.reference.get());
                 if (!ev.requestBundle.getBoolean(KEY_STICKY_BROACAST, false)) {
                     context.sendBroadcast(intent);
                 } else {
@@ -131,7 +131,7 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
     protected void startService(EventBuilder.Event ev){
         Intent intent = getIntent(ev);
         if (ev.reference != null && ev.reference.get() != null) {
-            ev.reference.get().startService(intent);
+            ((Context)ev.reference.get()).startService(intent);
         } else {
             LogUtils.e(TAG, "ev.reference is null or ev.reference.get() is null,cannot start service!");
             if (DEBUG) {
@@ -148,7 +148,7 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
             Serializable serializable = ev.requestBundle.getSerializable(KEY_CLASS);
             String action = ev.requestBundle.getString(KEY_ACTION);
             if (serializable != null) {
-                intent.setClass(ev.reference.get(), (Class<?>) serializable);
+                intent.setClass((Context) ev.reference.get(), (Class<?>) serializable);
                 ev.requestBundle.remove(KEY_CLASS);
             } else if (!TextUtils.isEmpty(action)) {
                 intent.setAction(action);
