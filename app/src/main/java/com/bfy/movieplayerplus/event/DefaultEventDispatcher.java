@@ -11,17 +11,12 @@ import com.bfy.movieplayerplus.event.base.BaseEventDispatcher;
  * @e-mail     : jinfu123.-@163.com
  * @createDate : 2017/4/18
  * @modifyDate : 2017/4/18
- * @version    : 1.0
+ * @version    : 2.0
  * @desc       : 默认的事件分发器
  * </pre>
  */
 
 public class DefaultEventDispatcher extends BaseEventDispatcher {
-
-
-    public DefaultEventDispatcher(){
-
-    }
 
     /*@Override
     public void onError(EventBuilder.Event event, int errorType) {
@@ -43,7 +38,7 @@ public class DefaultEventDispatcher extends BaseEventDispatcher {
                 EventJsonObject result = new EventJsonObject();
                 try {
                     result.put(BaseModel.KEY_RESULT_CODE, Constant.ResponseCode.CODE_MODEL_UNREGIST);
-                    result.put(BaseModel.KEY_DESC, "业务接收者(" + event.ReceiverKey + ")未注册，" +
+                    result.put(BaseModel.KEY_DESC, "业务接收者(" + event.receiverKey + ")未注册，" +
                             "无法正常使用!");
                     event.callback.call(event);
                 } catch (JSONException e) {
@@ -53,27 +48,5 @@ public class DefaultEventDispatcher extends BaseEventDispatcher {
         }
     }*/
 
-    /*@Override
-    public void dispatch(final EventBuilder.Event event) {
-        EventRegister register = EventFactory.getEventRegisterFactory()
-            .getRegister(event.registerType);
-        if (register == null) {
-            //to do by ouyangjinfu 已经实现
-
-            return;
-        }
-        final EventReceiver receiver = register.getReceiver(event.ReceiverKey);
-        if ( receiver == null) {
-
-            return;
-        }
-        Platform.getInstance(Platform.TYPE_UI_THREAD_POOL).execute(new Runnable() {
-            @Override
-            public void run() {
-                receiver.onReceive(event);
-            }
-        });
-
-    }*/
 
 }

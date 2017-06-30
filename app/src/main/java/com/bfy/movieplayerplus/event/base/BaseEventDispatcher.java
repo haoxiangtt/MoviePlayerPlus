@@ -14,27 +14,18 @@ import java.util.UUID;
  * @e-mail     : jinfu123.-@163.com
  * @createDate : 2017/6/20 0020
  * @modifyDate : 2017/6/20 0020
- * @version    : 1.0
- * @desc       :
+ * @version    : 2.0
+ * @desc       : 分发器基类，做了一些分发器必要的工作。
  * </pre>
  */
 
 public class BaseEventDispatcher implements EventDispatcher {
-
-//    public static final int DISPATCHER_ERROR_NULL_REGISTER = 0;
-//    public static final int DISPATCHER_ERROR_NULL_RECEIVER = 1;
 
     /*protected void onError(EventBuilder.Event event, int errorType) {
         LogUtils.e(TAG, "event dispatch error, errorType(" + errorType + ").");
     }*/
 
     protected Subscription onSchedule(final EventBuilder.Event event) {
-        /*Platform.getInstance(Platform.TYPE_UI_THREAD_POOL).execute(new Runnable() {
-            @Override
-            public void run() {
-                receiver.onReceive(event);
-            }
-        });*/
         Scheduler subscriber = event.getSubscriber();
         if (event.callback != null) {
             WrapEventCallback wrapCallback = new WrapEventCallback(event);
@@ -46,17 +37,7 @@ public class BaseEventDispatcher implements EventDispatcher {
 
     @Override
     public Subscription dispatch(EventBuilder.Event event) {
-        /*EventRegister register = EventFactory.getEventRegisterFactory()
-                .getRegister(event.registerType);
-        if (register == null) {
-            onError(event, DISPATCHER_ERROR_NULL_REGISTER);
-            return;
-        }
-        final EventReceiver receiver = register.getReceiver(event.ReceiverKey);
-        if ( receiver == null) {
-            onError(event, DISPATCHER_ERROR_NULL_RECEIVER);
-            return;
-        }*/
+
         if (event.getSubscriber() == null) {
             event.setSubscriber(Schedulers.cache());
         }
@@ -95,12 +76,22 @@ public class BaseEventDispatcher implements EventDispatcher {
                 LogUtils.e(Scheduler.TAG, "event scheduler error : register is null, register registerType = " + mEvent.registerType + ".");
                 return;
             }
-            final EventReceiver receiver = register.getReceiver(mEvent.ReceiverKey);
+            final EventReceiver receiver = register.getReceiver(mEvent.receiverKey);
             if ( receiver == null) {
-                LogUtils.e(Scheduler.TAG, "event scheduler error : receiver is null, receiver ReceiverKey = '" + mEvent.ReceiverKey + "'.");
+                LogUtils.e(Scheduler.TAG, "event scheduler error : receiver is null, receiver receiverKey = '" + mEvent.receiverKey + "'.");
                 return;
             }
+            if (mEvent.getInterceptor() != null
+                    && mEvent.getInterceptor().intercept(Interceptor.EventState.BEGIN_WORKING, mEvent)) {
+                return;
+            }
+
             receiver.onReceive(mEvent);
+
+            if (mEvent.getInterceptor() != null
+                    && mEvent.getInterceptor().intercept(Interceptor.EventState.END_WORKING, mEvent)) {
+                return;
+            }
         }
     }
 
@@ -122,6 +113,10 @@ public class BaseEventDispatcher implements EventDispatcher {
                 public void run() {
                     mEvent.callback = mCallback;
                     if (mCallback != null) {
+                        if (mEvent.getInterceptor() != null
+                                && mEvent.getInterceptor().intercept(Interceptor.EventState.CALLBACK, mEvent)) {
+                            return;
+                        }
                         mCallback.call(mEvent);
                     }
                 }

@@ -1,7 +1,5 @@
 package com.bfy.movieplayerplus.event.base;
 
-import com.bfy.movieplayerplus.event.DefaultEventDispatcher;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,12 +48,12 @@ public class EventFactory implements EventDispatcherFactory,
 
     private Map<Integer, EventDispatcher> dispatcherMap;
 
-    private DefaultEventDispatcher mDispatcher;
+    private BaseEventDispatcher mDispatcher;
 
     private EventFactory(){
         registerMap = new HashMap<>();
         dispatcherMap = new HashMap<>();
-        mDispatcher = new DefaultEventDispatcher();
+        mDispatcher = new BaseEventDispatcher();
     }
 
     public static EventDispatcherFactory getEventDispatcherFactory(){

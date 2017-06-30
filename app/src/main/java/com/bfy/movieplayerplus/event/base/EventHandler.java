@@ -25,12 +25,17 @@ public class EventHandler {
     }
 
     public Subscription send(EventBuilder.Event event){
+        if (event.getInterceptor() != null
+                && event.getInterceptor().intercept(Interceptor.EventState.SEND, event)) {
+            return new Unsubscribed();
+        }
         event.target = this;
         if (event.isSent) {
             //一次事件只能发送一次，发送多次抛出异常，如需要重复发送同样事件，可以调用
             //event.copy()复制一个新的event对象再重新发送
             throw new EventAlreadySentException("event repeat send,the event object connot send repeatedly!");
         }
+
         Subscription subscription = handleEvent(event);
         event.isSent = true;
         return subscription;
@@ -44,6 +49,10 @@ public class EventHandler {
         } else {
             dispatcher = EventFactory.getEventDispatcherFactory()
                     .getEventDispatcher(event);
+        }
+        if (event.getInterceptor() != null
+                && event.getInterceptor().intercept(Interceptor.EventState.DISPATCH, event)) {
+            return new Unsubscribed();
         }
         if (dispatcher != null) {
             return dispatcher.dispatch(event);

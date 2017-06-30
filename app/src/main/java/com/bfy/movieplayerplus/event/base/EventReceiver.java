@@ -9,7 +9,7 @@ package com.bfy.movieplayerplus.event.base;
  * @createDate : 2017/4/14 0014
  * @modifyDate : 2017/4/14 0014
  * @version    : 1.0
- * @desc       : 事件接收器
+ * @desc       : 接收者(接收器)
  * </pre>
  */
 

@@ -1,7 +1,5 @@
 package com.bfy.movieplayerplus.event.base;
 
-import android.text.TextUtils;
-
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -14,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  * @modifyDate : 2017/6/28 0028
  * @version    : 1.0
  * @desc       : Android UI线程调度器，最终是用MainThreadExecutor进行任务调度。
- * 代码大体和cache scheduler一样，为了区别两者所以分开实现，方便后期做修改
+ * 代码大体和CacheScheduler一样，为了区别两者所以分开实现，方便后期做修改
  * </pre>
  */
 
@@ -25,7 +23,7 @@ public class AndroidScheduler extends Scheduler {
         Platform platform = Platform.getInstance(Platform.TYPE_UI_THREAD_POOL);
         EventBuilder.Event event;
         Runnable work;
-        if (args != null && args.length == 2) {
+        if (args != null && args.length >= 2) {
             if (args[0] instanceof EventBuilder.Event) {
                 event = (EventBuilder.Event) args[0];
             }else {
@@ -72,19 +70,22 @@ public class AndroidScheduler extends Scheduler {
 
         @Override
         public Subscription schedule() {
-            if (mUnsubscribe) {
-                return new Unsubscribed();
-            }
-
-            ScheduledAction action = new ScheduledAction(mEvent, mPlatform, mWork);
-            mPlatform.execute(action);
-            return action;
+            return schedule(0, null);
         }
 
         @Override
         public Subscription schedule(long delayTime, TimeUnit unit) {
             //TODO unimpliment 延时调度方法
-            return null;
+            if (mUnsubscribe) {
+                return new Unsubscribed();
+            }
+            if (mEvent.getInterceptor() != null
+                    && mEvent.getInterceptor().intercept(Interceptor.EventState.SCHEDULE, mEvent)) {
+                return new Unsubscribed();
+            }
+            ScheduledAction action = new ScheduledAction(mEvent, mPlatform, mWork);
+            mPlatform.execute(action);
+            return action;
         }
     }
 

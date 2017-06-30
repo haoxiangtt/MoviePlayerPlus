@@ -16,12 +16,7 @@
 package com.bfy.movieplayerplus.event.base;
 
 import com.bfy.movieplayerplus.utils.LogUtils;
-
-import java.lang.ref.WeakReference;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 
 /**
  * <pre>
@@ -38,7 +33,6 @@ import java.util.concurrent.Future;
 public abstract class Platform
 {
     protected static final String TAG = "threadpool";
-    protected static final boolean DEBUG = LogUtils.isDebug;
     public static final int TYPE_CACHE_THREAD_POOL = 0;
     public static final int TYPE_UI_THREAD_POOL = 1;
     private static Platform CACHE_THREAD_POOL = findPlatform(TYPE_CACHE_THREAD_POOL);
@@ -46,9 +40,6 @@ public abstract class Platform
 
 
     protected Executor mDefaultExecutor;
-
-    protected ConcurrentHashMap<String,List<WeakReference<Future<?>>>> mThreadMap =
-            new ConcurrentHashMap<String,List<WeakReference<Future<?>>>>();
 
     public static <T extends Platform> T getInstance(int type)
     {

@@ -11,10 +11,9 @@ import java.util.concurrent.TimeUnit;
  * @createDate : 2017/6/28 0028
  * @modifyDate : 2017/6/28 0028
  * @version    : 1.0
- * @desc       : Event调度程序
+ * @desc       : Event调度器
  * </pre>
  */
-
 public abstract class Scheduler {
 
     public static final String TAG = "Event";

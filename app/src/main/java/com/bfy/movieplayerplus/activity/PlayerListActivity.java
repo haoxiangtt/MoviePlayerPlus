@@ -168,7 +168,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 			.requestBundle(bundle)
 			.callback(new EventCallback<EventJsonObject>() {
 				@Override
-				public void call(EventBuilder.Event<EventJsonObject> event) {
+				public  void call(EventBuilder.Event<EventJsonObject> event) {
 					if (pDialog.isShowing()) {
 						pDialog.dismiss();
 					}

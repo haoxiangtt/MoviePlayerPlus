@@ -1,5 +1,22 @@
 package com.bfy.movieplayerplus.event.base;
 
+
+import android.text.TextUtils;
+
+import com.bfy.movieplayerplus.utils.LogUtils;
+
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+
+
 /**
  * <pre>
  * @copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
@@ -12,21 +29,10 @@ package com.bfy.movieplayerplus.event.base;
  * @desc       : 可缓存的线程池
  * </pre>
  */
-
-import android.text.TextUtils;
-
-import com.bfy.movieplayerplus.utils.LogUtils;
-
-import java.lang.ref.WeakReference;
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-
 public class CacheThreadPool extends Platform{
+
+    protected ConcurrentHashMap<String,List<Reference<Future<?>>>> mThreadMap =
+            new ConcurrentHashMap<String,List<Reference<Future<?>>>>();
 
     public CacheThreadPool(){
         mDefaultExecutor = Executors.newCachedThreadPool();
@@ -38,20 +44,20 @@ public class CacheThreadPool extends Platform{
             return;
         }
 
-        List<WeakReference<Future<?>>> list = mThreadMap.get(sessionId);
+        List<Reference<Future<?>>> list = mThreadMap.get(sessionId);
         if (list == null) {
-            list = new Vector<WeakReference<Future<?>>>();
+            list = new Vector<Reference<Future<?>>>();
             mThreadMap.put(sessionId, list);
         }
 
         if (executor instanceof ExecutorService) {
 //                LogUtils.e(TAG,"ExecutorService class true,add a new task");
             Future<?> task = ((ExecutorService)executor).submit(runnable);
-            WeakReference<Future<?>> ref = new WeakReference<Future<?>>(task);
+            Reference<Future<?>> ref = new WeakReference<Future<?>>(task);
             list.add(ref);
         } else {
             FutureTask<?> task = new FutureTask<Object>(runnable,null);
-            WeakReference<Future<?>> ref = new WeakReference<Future<?>>(task);
+            Reference<Future<?>> ref = new WeakReference<Future<?>>(task);
             list.add(ref);
             executor.execute(task);
         }
@@ -59,35 +65,25 @@ public class CacheThreadPool extends Platform{
 
     @Override
     public boolean cancel(String sessionId) {
-        if (DEBUG) {
-            LogUtils.e(TAG,"Begin cancel the thread pool by sessionId : " + sessionId);
-        }
+        LogUtils.e(TAG,"Begin cancel the thread pool by sessionId : " + sessionId);
         if (TextUtils.isEmpty(sessionId)) {
-            if (DEBUG) {
-                LogUtils.e(TAG,"SessionId is empty!");
-            }
+            LogUtils.e(TAG,"SessionId is empty!");
             return false;
         }
-        List<WeakReference<Future<?>>> list = mThreadMap.get(sessionId);
+        List<Reference<Future<?>>> list = mThreadMap.get(sessionId);
         int flag = 0;
         if (list != null) {
-            if (DEBUG) {
-                LogUtils.e(TAG,"Find " + list.size() + " threads in the list.");
-            }
+            LogUtils.e(TAG,"Find " + list.size() + " threads in the list.");
             int i = 0;
-            for (WeakReference<Future<?>> ref : list) {
+            for (Reference<Future<?>> ref : list) {
                 if (ref.get() != null) {
                     Future<?> task = ref.get();
                     if (!task.isDone()) {
                         if (task.cancel(true)) {
-                            if (DEBUG) {
-                                LogUtils.e(TAG, "Cancel a thread successfully!index = " + i);
-                            }
+                            LogUtils.e(TAG, "Cancel a thread successfully!index = " + i);
                         } else {
                             flag++;
-                            if (DEBUG) {
-                                LogUtils.e(TAG, "Cancel a thread failure!index = " + i);
-                            }
+                            LogUtils.e(TAG, "Cancel a thread failure!index = " + i);
                         }
                     }
                 }
@@ -104,9 +100,7 @@ public class CacheThreadPool extends Platform{
                 return false;
             }
         } finally {
-            if (DEBUG) {
-                LogUtils.e(TAG,"End cancel thread pool!!!!");
-            }
+            LogUtils.e(TAG,"End cancel thread pool!!!!");
         }
 
     }

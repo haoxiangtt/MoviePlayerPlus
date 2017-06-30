@@ -2,7 +2,6 @@ package com.bfy.movieplayerplus.event.base;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Parcelable;
 
 import java.lang.ref.Reference;
 
@@ -42,7 +41,7 @@ public class EventBuilder {
     }
 
     public EventBuilder key(String key) {
-        mEvent.ReceiverKey = key;
+        mEvent.receiverKey = key;
         return this;
     }
 
@@ -106,6 +105,11 @@ public class EventBuilder {
         return this;
     }
 
+    public EventBuilder interceptor(Interceptor interceptor) {
+        mEvent.interceptor = interceptor;
+        return this;
+    }
+
     public <T> Event<T> build() {
         return mEvent;
     }
@@ -153,7 +157,7 @@ public class EventBuilder {
         protected void clear(){
             registerType = 0;
             requestId = 0;
-            ReceiverKey = "";
+            receiverKey = "";
             sessionId = "";
             requestBundle = null;
             responseData = null;
@@ -166,7 +170,7 @@ public class EventBuilder {
         /****************************************************************/
 
         public int registerType;//业务工厂(注册器Register)标识
-        public String ReceiverKey = "";//接收器(Receiver)标识
+        public String receiverKey = "";//接收器(Receiver)标识
         public int requestId;//接收器处理请求id
         public String sessionId = "";//会话ID
         public long startTime = 0;
@@ -184,6 +188,7 @@ public class EventBuilder {
         protected EventRegister register;//业务工厂(注册器Register)实例，此变量如果不为null，则registerType失效
         protected EventReceiver receiver;//接收器(Receiver)实例，此变量如果不为null，则receiverKey、registerType、register均失效，
         protected EventDispatcher dispatcher;//分发器，如果不配置，则会使用EventFactory中注册的分发器或使用默认的分发器。
+        protected Interceptor<T> interceptor;//拦截器，在对应阶段对事件流程进行拦截处理，
 
         protected Event(){
             isSent = false;
@@ -199,7 +204,7 @@ public class EventBuilder {
         public Event copy(){
             Event ev = new Event();
             ev.registerType = registerType;
-            ev.ReceiverKey = ReceiverKey;
+            ev.receiverKey = receiverKey;
             ev.requestId = requestId;
             ev.sessionId = sessionId;
             ev.requestBundle = requestBundle;
@@ -215,6 +220,7 @@ public class EventBuilder {
             ev.register = register;
             ev.receiver = receiver;
             ev.dispatcher = dispatcher;
+            ev.interceptor = interceptor;
             return ev;
         }
 
@@ -266,13 +272,21 @@ public class EventBuilder {
             this.dispatcher = dispatcher;
         }
 
+        public Interceptor<T> getInterceptor() {
+            return interceptor;
+        }
+
+        public void setInterceptor(Interceptor<T> interceptor) {
+            this.interceptor = interceptor;
+        }
+
         @Override
         public String toString() {
             return "Event{" +
                     "next=" + next +
                     ", registerType=" + registerType +
                     ", requestId=" + requestId +
-                    ", ReceiverKey='" + ReceiverKey + '\'' +
+                    ", receiverKey='" + receiverKey + '\'' +
                     ", sessionId='" + sessionId + '\'' +
                     ", requestBundle=" + requestBundle.toString() +
                     ", responseData=" + responseData.toString() +
