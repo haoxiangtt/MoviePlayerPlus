@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
@@ -27,7 +28,7 @@ import com.bfy.movieplayerplus.utils.LogUtils;
  * </pre>
  */
 
-public final class ContextReceiver implements EventReceiver, EventRegister {
+public final class ContextReceiver implements EventReceiver<Bundle, Object>, EventRegister {
 
     private static final boolean DEBUG = LogUtils.isDebug;
 
@@ -55,6 +56,8 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
     public static final String KEY_ACTION = "intent_action";
     //获取需要设置的URI
     public static final String KEY_DATA = "intent_data";
+    //获取需要设置的mimeType
+    public static final String KEY_TYPE = "intent_type";
     //获取需要设置的category
     public static final String KEY_CATEGORY = "intent_category";
 
@@ -82,11 +85,12 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
         return mInstance;
     }
 
-    protected void goActivity(EventBuilder.Event ev){
+    protected void goActivity(EventBuilder.Event<Bundle, Object> ev){
         Intent intent = getIntent(ev);
         boolean forResult = ev.requestBundle.getBoolean(KEY_START_FOR_RESULT, false);
         int requestCode = ev.requestBundle.getInt(KEY_REQUEST_CODE, 200);
-        if (ev.reference != null && ev.reference.get() != null) {
+        if (ev.reference != null && ev.reference.get() != null
+                && ev.reference.get() instanceof  Context) {
             if (forResult) {
                 if (ev.reference.get() instanceof Activity) {
                     ((Activity) ev.reference.get()).startActivityForResult(intent, requestCode);
@@ -98,7 +102,7 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
                 ((Context)ev.reference.get()).startActivity(intent);
             }
         } else {
-            LogUtils.e(TAG, "ev.reference is null or ev.reference.get() is null,cannot start activity!");
+            LogUtils.e(TAG, "ev.reference is null, or ev.reference.get() is null, or is not Context, cannot start activity!");
             if (DEBUG) {
                 throw new NullPointerException("ev.reference is null or ev.reference.get() is null,cannot start activity!");
             }
@@ -106,7 +110,7 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
 
     }
 
-    protected void sendBroadcast(EventBuilder.Event ev){
+    protected void sendBroadcast(EventBuilder.Event<Bundle, Object> ev){
         Intent intent = getIntent(ev);
         if (ev.reference != null && ev.reference.get() != null) {
             if (ev.requestBundle.getBoolean(KEY_LOCAL_BROACAST, false)) {
@@ -123,24 +127,24 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
         } else {
             LogUtils.e(TAG, "ev.reference is null or ev.reference.get() is null,cannot send broadcast!");
             if (DEBUG) {
-                throw new NullPointerException("ev.reference is null or ev.reference.get() is null,cannot send broadcast!");
+                throw new NullPointerException("ev.reference is null, or ev.reference.get() is null, or is not Context, cannot send broadcast!");
             }
         }
     }
 
-    protected void startService(EventBuilder.Event ev){
+    protected void startService(EventBuilder.Event<Bundle, Object> ev){
         Intent intent = getIntent(ev);
         if (ev.reference != null && ev.reference.get() != null) {
             ((Context)ev.reference.get()).startService(intent);
         } else {
-            LogUtils.e(TAG, "ev.reference is null or ev.reference.get() is null,cannot start service!");
+            LogUtils.e(TAG, "ev.reference is null, or ev.reference.get() is null, or is not Context, cannot start service!");
             if (DEBUG) {
                 throw new NullPointerException("ev.reference is null or ev.reference.get() is null,cannot start service!");
             }
         }
     }
 
-    protected Intent getIntent(EventBuilder.Event ev) {
+    protected Intent getIntent(EventBuilder.Event<Bundle, Object> ev) {
         Intent intent = ev.requestBundle.getParcelable(KEY_INTENT);
         if (intent == null) {
             intent = new Intent();
@@ -149,22 +153,30 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
             String action = ev.requestBundle.getString(KEY_ACTION);
             if (serializable != null) {
                 intent.setClass((Context) ev.reference.get(), (Class<?>) serializable);
-                ev.requestBundle.remove(KEY_CLASS);
+//                ev.requestBundle.remove(KEY_CLASS);
             } else if (!TextUtils.isEmpty(action)) {
                 intent.setAction(action);
-                ev.requestBundle.remove(KEY_ACTION);
+//                ev.requestBundle.remove(KEY_ACTION);
             } else {
                 throw new ContextNoActionException("start Context failed,there is no action or class to go!");
             }
-            String data = ev.requestBundle.getString(KEY_DATA);
-            if (!TextUtils.isEmpty(data)) {
-                intent.setData(Uri.parse(data));
-                ev.requestBundle.remove(KEY_DATA);
+
+            Uri data = ev.requestBundle.getParcelable(KEY_DATA);
+            if (data != null) {
+                intent.setData(data);
+//                ev.requestBundle.remove(KEY_DATA);
             }
+
+            String type = ev.requestBundle.getString(KEY_TYPE);
+            if (!TextUtils.isEmpty(type)) {
+                intent.setType(type);
+//                ev.requestBundle.remove(KEY_TYPE);
+            }
+
             String category = ev.requestBundle.getString(KEY_CATEGORY);
             if (!TextUtils.isEmpty(category)) {
                 intent.addCategory(category);
-                ev.requestBundle.remove(KEY_CATEGORY);
+//                ev.requestBundle.remove(KEY_CATEGORY);
             }
         } /*else {
             ev.requestBundle.remove(KEY_INTENT);
@@ -173,7 +185,7 @@ public final class ContextReceiver implements EventReceiver, EventRegister {
     }
 
     @Override
-    public void onReceive(EventBuilder.Event event) {
+    public void onReceive(EventBuilder.Event<Bundle, Object> event) {
         switch (event.requestId) {
             case REQUEST_GO_ACTIVITY: {
                 goActivity(event);

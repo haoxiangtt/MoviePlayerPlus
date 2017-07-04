@@ -1,5 +1,6 @@
 package com.bfy.movieplayerplus.model.bizImpl;
 
+import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.bfy.movieplayerplus.event.EventJsonObject;
@@ -35,7 +36,7 @@ import java.util.regex.Pattern;
  * </pre>
  */
 
-public final class MainModel extends BaseModel implements MainBiz, EventReceiver {
+public final class MainModel extends BaseModel implements MainBiz, EventReceiver<Bundle, Object> {
 
     public static final String MODEL_KEY = "main_model";
 
@@ -45,10 +46,11 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
     }
 
     @Override
-    public void getMV(final EventBuilder.Event ev) {
-        if (TextUtils.isEmpty(ev.sessionId)) {
-            ev.sessionId = Constant.generateNonce32();
+    public void getMV(EventBuilder.Event event) {
+        if (TextUtils.isEmpty(event.sessionId)) {
+            event.sessionId = Constant.generateNonce32();
         }
+        final EventBuilder.Event<Bundle, Object> ev = (EventBuilder.Event<Bundle, Object>)event;
         String url = Constant.KUGOU_MV_SEARCH_URL;
         StringBuilder sb = new StringBuilder(url);
         sb.append("?callback=");
@@ -134,10 +136,11 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
     }
 
     @Override
-    public void getMVUrl(final EventBuilder.Event ev) {
-        if (TextUtils.isEmpty(ev.sessionId)) {
-            ev.sessionId = Constant.generateNonce32();
+    public void getMVUrl(EventBuilder.Event event) {
+        if (TextUtils.isEmpty(event.sessionId)) {
+            event.sessionId = Constant.generateNonce32();
         }
+        final EventBuilder.Event<Bundle, Object> ev = (EventBuilder.Event<Bundle, Object>)event;
         StringBuilder sb = new StringBuilder(Constant.KUGOU_MV_REAL_URL);
         String md5 = Md5Coder.md5Lower(ev.requestBundle.getString("url") + "kugoumvcloud");
         sb.append("cmd=100");
@@ -204,7 +207,7 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
     }
 
     @Override
-    public void onReceive(EventBuilder.Event event) {
+    public void onReceive(EventBuilder.Event<Bundle, Object> event) {
         MainBiz model = ModelFactory.getInstance().getModelProxy(event.receiverKey);
         if (event.requestId == 0) {
             if (model != null) {

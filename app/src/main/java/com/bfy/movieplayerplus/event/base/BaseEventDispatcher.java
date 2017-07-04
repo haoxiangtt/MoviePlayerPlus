@@ -28,7 +28,7 @@ public class BaseEventDispatcher implements EventDispatcher {
     protected Subscription onSchedule(final EventBuilder.Event event) {
         Scheduler subscriber = event.getSubscriber();
         if (event.callback != null) {
-            WrapEventCallback wrapCallback = new WrapEventCallback(event);
+            WrapEventCallback wrapCallback = new WrapEventCallback(event.callback);
             event.callback = wrapCallback;
         }
         Scheduler.Worker worker = subscriber.createWorker(event, new DefaultWorkRunnable(event));
@@ -98,26 +98,29 @@ public class BaseEventDispatcher implements EventDispatcher {
     protected  static class WrapEventCallback implements EventCallback{
 
         private EventCallback mCallback;
-        private EventBuilder.Event mEvent;
 
-        public WrapEventCallback (EventBuilder.Event event) {
-            mEvent = event;
-            mCallback = event.callback;
+        public WrapEventCallback (EventCallback callback) {
+            mCallback = callback;
+        }
+
+        public <V, T> EventCallback<V, T> getInnerCallback(){
+            return mCallback;
         }
 
         @Override
         public void call(EventBuilder.Event event) {
+            final EventBuilder.Event ev = event;
             Scheduler observer = event.getObserver();
             Scheduler.Worker worker = observer.createWorker(event, new Runnable() {
                 @Override
                 public void run() {
-                    mEvent.callback = mCallback;
+//                    ev.callback = mCallback;
                     if (mCallback != null) {
-                        if (mEvent.getInterceptor() != null
-                                && mEvent.getInterceptor().intercept(Interceptor.EventState.CALLBACK, mEvent)) {
+                        if (ev.getInterceptor() != null
+                                && ev.getInterceptor().intercept(Interceptor.EventState.CALLBACK, ev)) {
                             return;
                         }
-                        mCallback.call(mEvent);
+                        mCallback.call(ev);
                     }
                 }
             });

@@ -69,6 +69,11 @@ public class AndroidScheduler extends Scheduler {
         }
 
         @Override
+        public <V, T> EventBuilder.Event<V, T> getEvent() {
+            return mEvent;
+        }
+
+        @Override
         public Subscription schedule() {
             return schedule(0, null);
         }
@@ -112,6 +117,11 @@ public class AndroidScheduler extends Scheduler {
         @Override
         public boolean isUnsubscribed() {
             return mUnsubscribe;
+        }
+
+        @Override
+        public <V, T> EventBuilder.Event<V, T> getEvent() {
+            return mEvent;
         }
 
         @Override

@@ -30,7 +30,7 @@ public class ContextEventDispatcher extends BaseEventDispatcher {
     @Override
     protected Subscription onSchedule(EventBuilder.Event event) {
         Scheduler subscriber = event.getSubscriber();
-        WrapEventCallback wrapCallback = new WrapEventCallback(event);
+        WrapEventCallback wrapCallback = new WrapEventCallback(event.callback);
         event.callback = wrapCallback;
         Scheduler.Worker worker = subscriber.createWorker(event, new ContextWorkRunnable(event));
         return worker.schedule();

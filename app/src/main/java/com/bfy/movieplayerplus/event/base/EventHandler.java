@@ -43,6 +43,10 @@ public class EventHandler {
 
     protected Subscription handleEvent(EventBuilder.Event event){
 
+        if (event == null) {
+            throw new NullPointerException("the event is null, cannot send.");
+        }
+
         EventDispatcher dispatcher;
         if (event.getDispatcher() != null) {
             dispatcher = event.getDispatcher();

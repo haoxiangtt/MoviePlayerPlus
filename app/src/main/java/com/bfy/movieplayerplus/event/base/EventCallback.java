@@ -13,6 +13,6 @@ package com.bfy.movieplayerplus.event.base;
  * </pre>
  */
 
-public interface EventCallback<T> {
-     void call(EventBuilder.Event<T> event);
+public interface EventCallback<V, T> {
+     void call(EventBuilder.Event<V, T> event);
 }

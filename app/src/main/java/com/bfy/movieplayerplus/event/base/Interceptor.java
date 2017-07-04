@@ -12,7 +12,7 @@ package com.bfy.movieplayerplus.event.base;
  * @desc       : 事件拦截器
  * </pre>
  */
-public interface Interceptor<T> {
+public interface Interceptor<V, T> {
 
     enum EventState {SEND, DISPATCH, SCHEDULE, BEGIN_WORKING, WORKING, END_WORKING, CALLBACK}
 
@@ -22,6 +22,6 @@ public interface Interceptor<T> {
      * @param event 拦截的事件源
      * @return 返回true表示拦截，直接中断事件传递，后续步骤不在执行；返回false表示不拦截，事件将继续传递
      */
-     boolean intercept(EventState state, EventBuilder.Event<T> event);
+     boolean intercept(EventState state, EventBuilder.Event<V, T> event);
 
 }

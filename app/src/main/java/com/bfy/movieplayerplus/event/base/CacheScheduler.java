@@ -1,15 +1,5 @@
 package com.bfy.movieplayerplus.event.base;
 
-import com.bfy.movieplayerplus.event.base.EventBuilder;
-import com.bfy.movieplayerplus.event.base.EventFactory;
-import com.bfy.movieplayerplus.event.base.EventReceiver;
-import com.bfy.movieplayerplus.event.base.EventRegister;
-import com.bfy.movieplayerplus.event.base.Platform;
-import com.bfy.movieplayerplus.event.base.Scheduler;
-import com.bfy.movieplayerplus.event.base.Subscription;
-import com.bfy.movieplayerplus.event.base.Unsubscribed;
-import com.bfy.movieplayerplus.utils.LogUtils;
-
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -78,20 +68,28 @@ public class CacheScheduler extends Scheduler {
         }
 
         @Override
-        public Subscription schedule() {
-            if (mUnsubscribe) {
-                return new Unsubscribed();
-            }
+        public <V, T> EventBuilder.Event<V, T> getEvent() {
+            return mEvent;
+        }
 
-            ScheduledAction action = new ScheduledAction(mEvent, mPlatform, mWork);
-            mPlatform.execute(action);
-            return action;
+        @Override
+        public Subscription schedule() {
+            return schedule(0, null);
         }
 
         @Override
         public Subscription schedule(long delayTime, TimeUnit unit) {
             //TODO unimpliment 延时调度方法
-            return null;
+            if (mUnsubscribe) {
+                return new Unsubscribed();
+            }
+            if (mEvent.getInterceptor() != null
+                    && mEvent.getInterceptor().intercept(Interceptor.EventState.SCHEDULE, mEvent)) {
+                return new Unsubscribed();
+            }
+            ScheduledAction action = new ScheduledAction(mEvent, mPlatform, mWork);
+            mPlatform.execute(action);
+            return action;
         }
     }
 
@@ -118,6 +116,11 @@ public class CacheScheduler extends Scheduler {
         @Override
         public boolean isUnsubscribed() {
             return mUnsubscribe;
+        }
+
+        @Override
+        public <V, T> EventBuilder.Event<V, T> getEvent() {
+            return mEvent;
         }
 
         @Override

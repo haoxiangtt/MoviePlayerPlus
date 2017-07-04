@@ -159,16 +159,16 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 		bundle.putString("filter", "2");
 		bundle.putString("iscorrection", "1");
 		bundle.putString("privilege_filter", "0");
-		EventBuilder.Event<EventJsonObject> event = new EventBuilder()
+		EventBuilder.Event<Bundle, EventJsonObject> event = new EventBuilder<Bundle, EventJsonObject>()
 			.type(Constant.EVENT_TYPE_MODEL)
 			.key(Constant.MAIN_MODEL)
 			.requestId(0)
 			.startTime(System.currentTimeMillis())
 			.target(EventHandler.getInstance())
 			.requestBundle(bundle)
-			.callback(new EventCallback<EventJsonObject>() {
+			.callback(new EventCallback<Bundle, EventJsonObject>() {
 				@Override
-				public  void call(EventBuilder.Event<EventJsonObject> event) {
+				public  void call(EventBuilder.Event<Bundle, EventJsonObject> event) {
 					if (pDialog.isShowing()) {
 						pDialog.dismiss();
 					}
@@ -185,7 +185,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 		event.send();
 	}
 
-	private void parseData(EventBuilder.Event<EventJsonObject> event) {
+	private void parseData(EventBuilder.Event<Bundle, EventJsonObject> event) {
 		EventJsonObject result = event.responseData;
 		if (Constant.ResponseCode.CODE_SUCCESSFULLY.equals(result.optString(BaseModel.KEY_RESULT_CODE))) {
             JSONObject json = result.optJSONObject("json");
@@ -234,7 +234,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 			intent.setDataAndType(uri, "video/*");
 			Bundle bundle = new Bundle();
 			bundle.putParcelable(ContextReceiver.KEY_INTENT, intent);
-			new EventBuilder()
+			new EventBuilder<Bundle, EventJsonObject>()
 				.type(Constant.EVENT_TYPE_CONTEXT)
 				.requestId(ContextReceiver.REQUEST_GO_ACTIVITY)
 				.target(EventHandler.getInstance())
@@ -257,16 +257,16 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 		}
 		Bundle bundle = new Bundle();
 		bundle.putString("url", item.get(VIDEO_PATH));
-		new EventBuilder()
+		new EventBuilder<Bundle, EventJsonObject>()
 			.type(Constant.EVENT_TYPE_MODEL)
 			.key(Constant.MAIN_MODEL)
 			.requestId(1)
 			.startTime(System.currentTimeMillis())
 			.target(EventHandler.getInstance())
 			.requestBundle(bundle)
-			.callback(new EventCallback<EventJsonObject>() {
+			.callback(new EventCallback<Bundle, EventJsonObject>() {
 				@Override
-				public void call(EventBuilder.Event<EventJsonObject> event) {
+				public void call(EventBuilder.Event<Bundle, EventJsonObject> event) {
 					if (pDialog.isShowing()) {
 						pDialog.dismiss();
 					}
@@ -289,6 +289,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 			}).subscribeOn(Schedulers.cache())
 			.observeOn(Schedulers.ui())
 			.build().send();
+
 	}
 
 	private void goPlayerActivity(String realUrl) {
@@ -298,7 +299,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 			Uri uri = Uri.parse(realUrl);
 			intent.setDataAndType(uri, "video/*");
 			bundle.putParcelable(ContextReceiver.KEY_INTENT, intent);
-            new EventBuilder()
+            new EventBuilder<Bundle, EventJsonObject>()
 				.type(Constant.EVENT_TYPE_CONTEXT)
 				.requestId(ContextReceiver.REQUEST_GO_ACTIVITY)
 				.target(EventHandler.getInstance())

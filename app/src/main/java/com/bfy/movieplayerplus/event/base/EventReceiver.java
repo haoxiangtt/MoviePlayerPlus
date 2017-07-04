@@ -13,6 +13,6 @@ package com.bfy.movieplayerplus.event.base;
  * </pre>
  */
 
-public interface EventReceiver {
-    void onReceive(EventBuilder.Event event);
+public interface EventReceiver<V, T> {
+    void onReceive(EventBuilder.Event<V, T> event);
 }

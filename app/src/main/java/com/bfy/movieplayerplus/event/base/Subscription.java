@@ -19,4 +19,6 @@ public interface Subscription {
 
     boolean isUnsubscribed();
 
+    <V, T> EventBuilder.Event<V, T> getEvent();
+
 }

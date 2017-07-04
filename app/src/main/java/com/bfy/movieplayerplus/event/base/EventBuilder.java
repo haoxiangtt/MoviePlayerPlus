@@ -1,8 +1,6 @@
 package com.bfy.movieplayerplus.event.base;
 
 import android.content.Context;
-import android.os.Bundle;
-
 import java.lang.ref.Reference;
 
 /**
@@ -19,15 +17,15 @@ import java.lang.ref.Reference;
  * </pre>
  */
 
-public class EventBuilder {
+public class EventBuilder<V, T> {
 
-    private Event mEvent;
+    private Event<V, T> mEvent;
 
     public EventBuilder() {
         mEvent = obtain();
     }
 
-    protected final Event obtain(){
+    protected final Event<V, T> obtain(){
         return Event.obtain();
     }
 
@@ -35,82 +33,82 @@ public class EventBuilder {
         ev.release();
     }
 
-    public EventBuilder type(int type) {
+    public EventBuilder<V, T> type(int type) {
         mEvent.registerType = type;
         return this;
     }
 
-    public EventBuilder key(String key) {
+    public EventBuilder<V, T> key(String key) {
         mEvent.receiverKey = key;
         return this;
     }
 
-    public EventBuilder requestId(int requestId) {
+    public EventBuilder<V, T> requestId(int requestId) {
         mEvent.requestId = requestId;
         return this;
     }
 
-    public EventBuilder sessionId(String sessionId) {
+    public EventBuilder<V, T> sessionId(String sessionId) {
         mEvent.sessionId = sessionId;
         return this;
     }
 
-    public EventBuilder requestBundle(Bundle bundle) {
+    public EventBuilder<V, T> requestBundle(V bundle) {
         mEvent.requestBundle = bundle;
         return this;
     }
 
-    public EventBuilder reference(Reference<Context> reference) {
+    public EventBuilder<V, T> reference(Reference reference) {
         mEvent.reference = reference;
         return this;
     }
 
-    public EventBuilder target(EventHandler handler) {
+    public EventBuilder<V, T> target(EventHandler handler) {
         mEvent.target = handler;
         return this;
     }
 
-    public EventBuilder callback(EventCallback callback) {
+    public EventBuilder<V, T> callback(EventCallback<V, T> callback) {
         mEvent.callback = callback;
         return this;
     }
 
-    public EventBuilder startTime(long time) {
+    public EventBuilder<V, T> startTime(long time) {
         mEvent.startTime = time;
         return this;
     }
 
-    public EventBuilder subscribeOn(Scheduler scheduler) {
+    public EventBuilder<V, T> subscribeOn(Scheduler scheduler) {
         mEvent.subscriber = scheduler;
         return this;
     };
 
-    public EventBuilder observeOn(Scheduler scheduler) {
+    public EventBuilder<V, T> observeOn(Scheduler scheduler) {
         mEvent.observer = scheduler;
         return this;
     }
 
-    public EventBuilder register(EventRegister register) {
+    public EventBuilder<V, T> register(EventRegister register) {
         mEvent.register = register;
         return this;
     }
 
-    public EventBuilder receiver(EventReceiver receiver) {
+    public EventBuilder<V, T> receiver(EventReceiver<V, T> receiver) {
         mEvent.receiver = receiver;
         return this;
     }
 
-    public EventBuilder dispatcher(EventDispatcher dispatcher) {
+    public EventBuilder<V, T> dispatcher(EventDispatcher dispatcher) {
         mEvent.dispatcher = dispatcher;
         return this;
     }
 
-    public EventBuilder interceptor(Interceptor interceptor) {
+    public EventBuilder<V, T> interceptor(Interceptor<V, T> interceptor) {
         mEvent.interceptor = interceptor;
         return this;
     }
 
-    public <T> Event<T> build() {
+    public Event<V, T> build() {
         return mEvent;
     }
 
@@ -119,20 +117,20 @@ public class EventBuilder {
      * 事件源。
      * 为了规范开发，请不要将构造方法曝光
      */
-    public static final class Event<T>{
+    public static final class Event<V, T>{
 
-        /*********************event对象池，后续用于内存优化****************/
-        private static Event mPool;
+        /*********************event对象池，后续用于内存优化(对象池功能暂时无法使用了)****************/
+        /*private static Event mPool;
         private static Object lock = new Object();
         private static int curSize = 0;
         private static final int maxSize = 5;
-        private Event next;
+        private Event next;*/
 
-        protected static Event obtain(){
-            synchronized (lock) {
+        protected static <V, T> Event<V, T> obtain(){
+            /*synchronized (lock) {
                 if (curSize <= 0) {
                     curSize = 0;
-                    return new Event();
+                    return new Event<>();
                 } else {
                     Event ev = mPool;
                     mPool = ev.next;
@@ -140,18 +138,19 @@ public class EventBuilder {
                     curSize--;
                     return ev;
                 }
-            }
+            }*/
+            return new Event<>();
         }
 
         protected void release(){
-            synchronized (lock) {
+            /*synchronized (lock) {
                 clear();
                 if (curSize < maxSize) {
                     next = mPool;
                     mPool = this;
                     curSize++;
                 }
-            }
+            }*/
         }
 
         protected void clear(){
@@ -175,20 +174,20 @@ public class EventBuilder {
         public String sessionId = "";//会话ID
         public long startTime = 0;
         public long endTime = 0;
-        public Bundle requestBundle;//请求参数
+        public V requestBundle;//请求参数
         public T responseData;//请求结果集
         public EventCallback callback;//回调
-        public Reference<Context> reference;//android 上下文
+        public Reference reference;//存放android 上下文(任何生命周期比较长的资源消耗大的实例都可以存放在此)
         public EventHandler target;
 
-        protected boolean isSent;
-        protected boolean unsubscribe;
-        protected Scheduler subscriber;//事件处理时所在的调度器
-        protected Scheduler observer;//执行回调函数所在的调度器
-        protected EventRegister register;//业务工厂(注册器Register)实例，此变量如果不为null，则registerType失效
-        protected EventReceiver receiver;//接收器(Receiver)实例，此变量如果不为null，则receiverKey、registerType、register均失效，
-        protected EventDispatcher dispatcher;//分发器，如果不配置，则会使用EventFactory中注册的分发器或使用默认的分发器。
-        protected Interceptor<T> interceptor;//拦截器，在对应阶段对事件流程进行拦截处理，
+        boolean isSent;
+        boolean unsubscribe;
+        Scheduler subscriber;//事件处理时所在的调度器
+        Scheduler observer;//执行回调函数所在的调度器
+        EventRegister register;//业务工厂(注册器Register)实例，此变量如果不为null，则registerType失效
+        EventReceiver<V, T> receiver;//接收器(Receiver)实例，此变量如果不为null，则receiverKey、registerType、register均失效，
+        EventDispatcher dispatcher;//分发器，如果不配置，则会使用EventFactory中注册的分发器或使用默认的分发器。
+        Interceptor<V, T> interceptor;//拦截器，在对应阶段对事件流程进行拦截处理，
 
         protected Event(){
             isSent = false;
@@ -201,8 +200,8 @@ public class EventBuilder {
             return target.send(this);
         }
 
-        public Event copy(){
-            Event ev = new Event();
+        public Event<V, T> copy(){
+            Event<V, T> ev = new Event<>();
             ev.registerType = registerType;
             ev.receiverKey = receiverKey;
             ev.requestId = requestId;
@@ -256,11 +255,11 @@ public class EventBuilder {
             this.register = register;
         }
 
-        public EventReceiver getReceiver() {
+        public EventReceiver<V, T> getReceiver() {
             return receiver;
         }
 
-        public void setReceiver(EventReceiver receiver) {
+        public void setReceiver(EventReceiver<V, T> receiver) {
             this.receiver = receiver;
         }
 
@@ -272,18 +271,18 @@ public class EventBuilder {
             this.dispatcher = dispatcher;
         }
 
-        public Interceptor<T> getInterceptor() {
+        public Interceptor<V, T> getInterceptor() {
             return interceptor;
         }
 
-        public void setInterceptor(Interceptor<T> interceptor) {
+        public void setInterceptor(Interceptor<V, T> interceptor) {
             this.interceptor = interceptor;
         }
 
         @Override
         public String toString() {
             return "Event{" +
-                    "next=" + next +
+//                    "next=" + next +
                     ", registerType=" + registerType +
                     ", requestId=" + requestId +
                     ", receiverKey='" + receiverKey + '\'' +
