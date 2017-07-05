@@ -2,6 +2,7 @@ package com.bfy.movieplayerplus.event.base;
 
 import android.content.Context;
 import java.lang.ref.Reference;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <pre>
@@ -25,7 +26,7 @@ public class EventBuilder<V, T> {
         mEvent = obtain();
     }
 
-    protected final Event<V, T> obtain(){
+    final Event<V, T> obtain(){
         return Event.obtain();
     }
 
@@ -108,6 +109,12 @@ public class EventBuilder<V, T> {
         return this;
     }
 
+    public EventBuilder<V, T> delay(long delay, TimeUnit unit){
+        mEvent.delay = delay;
+        mEvent.unit = unit;
+        return this;
+    }
+
     public Event<V, T> build() {
         return mEvent;
     }
@@ -126,7 +133,7 @@ public class EventBuilder<V, T> {
         private static final int maxSize = 5;
         private Event next;*/
 
-        protected static <V, T> Event<V, T> obtain(){
+        static <V, T> Event<V, T> obtain(){
             /*synchronized (lock) {
                 if (curSize <= 0) {
                     curSize = 0;
@@ -142,7 +149,7 @@ public class EventBuilder<V, T> {
             return new Event<>();
         }
 
-        protected void release(){
+        void release(){
             /*synchronized (lock) {
                 clear();
                 if (curSize < maxSize) {
@@ -153,7 +160,7 @@ public class EventBuilder<V, T> {
             }*/
         }
 
-        protected void clear(){
+        void clear(){
             registerType = 0;
             requestId = 0;
             receiverKey = "";
@@ -176,10 +183,12 @@ public class EventBuilder<V, T> {
         public long endTime = 0;
         public V requestBundle;//请求参数
         public T responseData;//请求结果集
-        public EventCallback callback;//回调
         public Reference reference;//存放android 上下文(任何生命周期比较长的资源消耗大的实例都可以存放在此)
         public EventHandler target;
+        EventCallback<V, T> callback;//回调
 
+        long delay;
+        TimeUnit unit;
         boolean isSent;
         boolean unsubscribe;
         Scheduler subscriber;//事件处理时所在的调度器
@@ -189,8 +198,9 @@ public class EventBuilder<V, T> {
         EventDispatcher dispatcher;//分发器，如果不配置，则会使用EventFactory中注册的分发器或使用默认的分发器。
         Interceptor<V, T> interceptor;//拦截器，在对应阶段对事件流程进行拦截处理，
 
-        protected Event(){
+        Event(){
             isSent = false;
+            unsubscribe = false;
         }
 
         public Subscription send(){
@@ -212,7 +222,7 @@ public class EventBuilder<V, T> {
             ev.target = target;
 
             ev.isSent = false;
-            ev.unsubscribe = false;
+            ev.unsubscribe = unsubscribe;
             ev.startTime = System.currentTimeMillis();
             ev.observer = observer;
             ev.subscriber = subscriber;
@@ -221,6 +231,29 @@ public class EventBuilder<V, T> {
             ev.dispatcher = dispatcher;
             ev.interceptor = interceptor;
             return ev;
+        }
+
+        public void performCallback(Event<V, T> ev){
+            if (callback != null) {
+                callback.call(ev);
+            }
+        }
+
+        public EventCallback<V, T> getCallback(){
+            return callback;
+        }
+
+        void setDelay(long delay, TimeUnit unit) {
+            this.delay = delay;
+            this.unit = unit;
+        }
+
+        public long getDelay(){
+            return delay;
+        }
+
+        public TimeUnit getUnit(){
+            return unit;
         }
 
         public boolean isUnsubscribe(){
@@ -235,7 +268,7 @@ public class EventBuilder<V, T> {
             return observer;
         }
 
-        public void setObserver(Scheduler scheduler){
+        void setObserver(Scheduler scheduler){
             observer = scheduler;
         }
 
@@ -243,7 +276,7 @@ public class EventBuilder<V, T> {
             return subscriber;
         }
 
-        public void setSubscriber(Scheduler scheduler) {
+        void setSubscriber(Scheduler scheduler) {
             subscriber = scheduler;
         }
 
@@ -251,7 +284,7 @@ public class EventBuilder<V, T> {
             return register;
         }
 
-        public void setRegister(EventRegister register) {
+        void setRegister(EventRegister register) {
             this.register = register;
         }
 
@@ -259,7 +292,7 @@ public class EventBuilder<V, T> {
             return receiver;
         }
 
-        public void setReceiver(EventReceiver<V, T> receiver) {
+        void setReceiver(EventReceiver<V, T> receiver) {
             this.receiver = receiver;
         }
 
@@ -267,7 +300,7 @@ public class EventBuilder<V, T> {
             return dispatcher;
         }
 
-        public void setDispatcher(EventDispatcher dispatcher) {
+        void setDispatcher(EventDispatcher dispatcher) {
             this.dispatcher = dispatcher;
         }
 
@@ -275,7 +308,7 @@ public class EventBuilder<V, T> {
             return interceptor;
         }
 
-        public void setInterceptor(Interceptor<V, T> interceptor) {
+        void setInterceptor(Interceptor<V, T> interceptor) {
             this.interceptor = interceptor;
         }
 

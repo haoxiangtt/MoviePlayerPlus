@@ -2,8 +2,10 @@ package com.bfy.movieplayerplus.event;
 
 import com.bfy.movieplayerplus.event.base.BaseEventDispatcher;
 import com.bfy.movieplayerplus.event.base.EventBuilder;
+import com.bfy.movieplayerplus.event.base.EventCallback;
 import com.bfy.movieplayerplus.event.base.Interceptor;
 import com.bfy.movieplayerplus.event.base.Scheduler;
+import com.bfy.movieplayerplus.event.base.Schedulers;
 import com.bfy.movieplayerplus.event.base.Subscription;
 
 /**
@@ -29,11 +31,21 @@ public class ContextEventDispatcher extends BaseEventDispatcher {
 
     @Override
     protected Subscription onSchedule(EventBuilder.Event event) {
+        return super.onSchedule(event);
+    }
+
+    @Override
+    protected EventCallback wrapCallback(EventCallback callback) {
+        return super.wrapCallback(callback);
+    }
+
+    @Override
+    protected Scheduler.Worker createWorker(EventBuilder.Event event) {
         Scheduler subscriber = event.getSubscriber();
-        WrapEventCallback wrapCallback = new WrapEventCallback(event.callback);
-        event.callback = wrapCallback;
-        Scheduler.Worker worker = subscriber.createWorker(event, new ContextWorkRunnable(event));
-        return worker.schedule();
+        if (subscriber == null) {
+            subscriber = Schedulers.defaultScheduler();
+        }
+        return subscriber.createWorker(event, new ContextWorkRunnable(event));
     }
 
     protected static class ContextWorkRunnable implements Runnable {
@@ -45,16 +57,13 @@ public class ContextEventDispatcher extends BaseEventDispatcher {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public void run() {
             if (mEvent.getInterceptor() != null
                     && mEvent.getInterceptor().intercept(Interceptor.EventState.BEGIN_WORKING, mEvent)) {
                 return;
             }
             ContextReceiver.getReceiverInstance().onReceive(mEvent);
-            if (mEvent.getInterceptor() != null
-                    && mEvent.getInterceptor().intercept(Interceptor.EventState.END_WORKING, mEvent)) {
-                return;
-            }
         }
     }
 

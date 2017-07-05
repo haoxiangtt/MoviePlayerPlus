@@ -14,7 +14,7 @@ package com.bfy.movieplayerplus.event.base;
  */
 public interface Interceptor<V, T> {
 
-    enum EventState {SEND, DISPATCH, SCHEDULE, BEGIN_WORKING, WORKING, END_WORKING, CALLBACK}
+    enum EventState {SEND, DISPATCH, SCHEDULE, BEGIN_WORKING, WORKING, CALLBACK, END_WORKING}
 
     /**
      * 拦截事件处理

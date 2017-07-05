@@ -15,6 +15,14 @@ package com.bfy.movieplayerplus.event.base;
 
 public class Unsubscribed implements Subscription {
 
+    private EventBuilder.Event mEvent;
+
+    public Unsubscribed(){}
+
+    public Unsubscribed(EventBuilder.Event event) {
+        mEvent = event;
+    }
+
     @Override
     public void unsubscribe() {
 
@@ -23,5 +31,10 @@ public class Unsubscribed implements Subscription {
     @Override
     public boolean isUnsubscribed() {
         return true;
+    }
+
+    @Override
+    public <V, T> EventBuilder.Event<V, T> getEvent() {
+        return mEvent;
     }
 }

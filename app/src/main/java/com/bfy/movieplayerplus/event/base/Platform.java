@@ -44,11 +44,11 @@ public abstract class Platform
     public static <T extends Platform> T getInstance(int type)
     {
         if (type == TYPE_UI_THREAD_POOL) {
-            try {
+            /*try {
                 Class.forName("android.os.Build");
             } catch (ClassNotFoundException e) {
                 return (T)CACHE_THREAD_POOL;
-            }
+            }*/
             return (T) ANDROID_THREAD;
         } else if (type == TYPE_CACHE_THREAD_POOL) {
             return (T) CACHE_THREAD_POOL;
@@ -58,16 +58,12 @@ public abstract class Platform
     }
 
     private static Platform findPlatform(int type) {
-        try
-        {
-            Class.forName("android.os.Build");
-            if(type == TYPE_UI_THREAD_POOL) {
-                return new AndroidThreadPool();
-            } else if (type == TYPE_CACHE_THREAD_POOL){
-                return new CacheThreadPool();
-            }
-        } catch (ClassNotFoundException ignored) {}
-        return new CacheThreadPool();
+        if(type == TYPE_UI_THREAD_POOL) {
+            return new AndroidThreadPool();
+        } else if (type == TYPE_CACHE_THREAD_POOL){
+            return new CacheThreadPool();
+        }
+        return null;
     }
 
 

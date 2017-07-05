@@ -2,6 +2,8 @@ package com.bfy.movieplayerplus.event;
 
 
 import com.bfy.movieplayerplus.event.base.BaseEventDispatcher;
+import com.bfy.movieplayerplus.event.base.EventBuilder;
+import com.bfy.movieplayerplus.event.base.Subscription;
 
 /**
  * <pre>
@@ -12,41 +14,20 @@ import com.bfy.movieplayerplus.event.base.BaseEventDispatcher;
  * @createDate : 2017/4/18
  * @modifyDate : 2017/4/18
  * @version    : 2.0
- * @desc       : 默认的事件分发器
+ * @desc       : 默认的事件分发器, 沿用BaseEventDispatcher逻辑, 暂为做实现
+ * //TODO 待实现
  * </pre>
  */
 
 public class DefaultEventDispatcher extends BaseEventDispatcher {
 
-    /*@Override
-    public void onError(EventBuilder.Event event, int errorType) {
-        if (errorType == DISPATCHER_ERROR_NULL_REGISTER) {
-            if (event.callback != null) {
-                EventJsonObject result = new EventJsonObject();
-                try {
-                    result.put(BaseModel.KEY_RESULT_CODE, Constant.ResponseCode.CODE_MODEL_UNREGIST);
-                    result.put(BaseModel.KEY_DESC, "业务工厂(" + event.registerType + ")未注册，" +
-                            "无法正常使用!");
-                    event.callback.call(event);
-                } catch (JSONException e) {
-                    LogUtils.e(TAG, e.getMessage());
-                }
-            }
-        } else if (errorType == DISPATCHER_ERROR_NULL_RECEIVER) {
-            if (event.callback != null) {
-                //to do by ouyangjinfu 已经实现
-                EventJsonObject result = new EventJsonObject();
-                try {
-                    result.put(BaseModel.KEY_RESULT_CODE, Constant.ResponseCode.CODE_MODEL_UNREGIST);
-                    result.put(BaseModel.KEY_DESC, "业务接收者(" + event.receiverKey + ")未注册，" +
-                            "无法正常使用!");
-                    event.callback.call(event);
-                } catch (JSONException e) {
-                    LogUtils.e(TAG, e.getMessage());
-                }
-            }
-        }
-    }*/
+    @Override
+    public Subscription dispatch(EventBuilder.Event event) {
+        return super.dispatch(event);
+    }
 
-
+    @Override
+    protected Subscription onSchedule(EventBuilder.Event event) {
+        return super.onSchedule(event);
+    }
 }

@@ -105,17 +105,15 @@ public class ModelFilter implements InvocationHandler {
                     }
                     // by ouyangjinfu 已经实现
                     Event ev = (Event)arg;
-                    if (ev.callback != null) {
-                        EventJsonObject ejb = new EventJsonObject();
-                        try {
-                            ejb.putOpt(BaseModel.KEY_RESULT_CODE, status);
-                            ejb.putOpt(BaseModel.KEY_DESC, msg);
-                        } catch (JSONException e) {
-                        }finally {
-                            ev.responseData = ejb;
-                        }
-                        ev.callback.call(ev);
+                    EventJsonObject ejb = new EventJsonObject();
+                    try {
+                        ejb.putOpt(BaseModel.KEY_RESULT_CODE, status);
+                        ejb.putOpt(BaseModel.KEY_DESC, msg);
+                    } catch (JSONException e) {
+                    }finally {
+                        ev.responseData = ejb;
                     }
+                    ev.performCallback(ev);
                     break;
                 }
             }

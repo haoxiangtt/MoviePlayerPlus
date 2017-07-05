@@ -1,5 +1,6 @@
 package com.bfy.movieplayerplus.event;
 
+import com.bfy.movieplayerplus.event.base.BaseEventDispatcher;
 import com.bfy.movieplayerplus.event.base.EventBuilder;
 import com.bfy.movieplayerplus.event.base.EventDispatcher;
 import com.bfy.movieplayerplus.event.base.Subscription;
@@ -14,11 +15,11 @@ import com.bfy.movieplayerplus.event.base.Subscription;
  * @modifyDate : 2017/6/2 0002
  * @version    : 1.0
  * @desc       : 从本地数据库或者从内容提供者提取数据时用到的事件分发器，暂未实现。
+ * //TODO 待实现
  * </pre>
  */
 
-public class ContentResultEventDispatcher implements EventDispatcher {
-
+public class ContentResultEventDispatcher extends BaseEventDispatcher {
 
     public ContentResultEventDispatcher() {
 
@@ -26,8 +27,7 @@ public class ContentResultEventDispatcher implements EventDispatcher {
 
     @Override
     public Subscription dispatch(EventBuilder.Event event) {
-        //TODO 待扩展
-        return null;
+        return super.dispatch(event);
     }
 
 }

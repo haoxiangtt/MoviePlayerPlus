@@ -24,10 +24,11 @@ public class EventHandler {
         return mInstance;
     }
 
+    @SuppressWarnings("unchecked")
     public Subscription send(EventBuilder.Event event){
         if (event.getInterceptor() != null
                 && event.getInterceptor().intercept(Interceptor.EventState.SEND, event)) {
-            return new Unsubscribed();
+            return new Unsubscribed(event);
         }
         event.target = this;
         if (event.isSent) {
@@ -41,6 +42,7 @@ public class EventHandler {
         return subscription;
     }
 
+    @SuppressWarnings("unchecked")
     protected Subscription handleEvent(EventBuilder.Event event){
 
         if (event == null) {
@@ -56,7 +58,7 @@ public class EventHandler {
         }
         if (event.getInterceptor() != null
                 && event.getInterceptor().intercept(Interceptor.EventState.DISPATCH, event)) {
-            return new Unsubscribed();
+            return new Unsubscribed(event);
         }
         if (dispatcher != null) {
             return dispatcher.dispatch(event);

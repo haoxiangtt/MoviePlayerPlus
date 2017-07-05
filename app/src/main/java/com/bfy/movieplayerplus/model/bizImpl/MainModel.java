@@ -109,9 +109,7 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
                         response.put(KEY_URL, url);
                         ev.responseData = response;
                         ev.endTime = System.currentTimeMillis();
-                        if (ev.callback != null) {
-                            ev.callback.call(ev);
-                        }
+                        ev.performCallback(ev);
                     } else {
                         EventJsonObject response = new EventJsonObject();
                         response.put(KEY_RESULT_CODE, Constant.ResponseCode.CODE_DATA_ERROR);
@@ -137,9 +135,6 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
 
     @Override
     public void getMVUrl(EventBuilder.Event event) {
-        if (TextUtils.isEmpty(event.sessionId)) {
-            event.sessionId = Constant.generateNonce32();
-        }
         final EventBuilder.Event<Bundle, Object> ev = (EventBuilder.Event<Bundle, Object>)event;
         StringBuilder sb = new StringBuilder(Constant.KUGOU_MV_REAL_URL);
         String md5 = Md5Coder.md5Lower(ev.requestBundle.getString("url") + "kugoumvcloud");
@@ -170,9 +165,7 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
                     response.put(KEY_URL, url);
                     ev.responseData = response;
                     ev.endTime = System.currentTimeMillis();
-                    if (ev.callback != null) {
-                        ev.callback.call(ev);
-                    }
+                    ev.performCallback(ev);
 
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
@@ -201,9 +194,7 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
                 + ">>>>>errorMsg : " + obj.toString());
         ev.responseData = obj;
         ev.endTime = System.currentTimeMillis();
-        if (ev.callback != null) {
-            ev.callback.call(ev);
-        }
+        ev.performCallback(ev);
     }
 
     @Override

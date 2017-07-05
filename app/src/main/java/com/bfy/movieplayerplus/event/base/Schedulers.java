@@ -27,4 +27,8 @@ public class Schedulers {
         return UI_SCHEDELER;
     }
 
+    public static Scheduler defaultScheduler() {
+        return CACHE_SCHEDELER;
+    }
+
 }
