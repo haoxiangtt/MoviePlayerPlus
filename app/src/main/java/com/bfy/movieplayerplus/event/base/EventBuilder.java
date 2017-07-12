@@ -1,6 +1,5 @@
 package com.bfy.movieplayerplus.event.base;
 
-import android.content.Context;
 import java.lang.ref.Reference;
 import java.util.concurrent.TimeUnit;
 
@@ -54,8 +53,8 @@ public class EventBuilder<V, T> {
         return this;
     }
 
-    public EventBuilder<V, T> requestBundle(V bundle) {
-        mEvent.requestBundle = bundle;
+    public EventBuilder<V, T> requestData(V bundle) {
+        mEvent.requestData = bundle;
         return this;
     }
 
@@ -165,7 +164,7 @@ public class EventBuilder<V, T> {
             requestId = 0;
             receiverKey = "";
             sessionId = "";
-            requestBundle = null;
+            requestData = null;
             responseData = null;
             callback = null;
             reference = null;
@@ -181,7 +180,7 @@ public class EventBuilder<V, T> {
         public String sessionId = "";//会话ID
         public long startTime = 0;
         public long endTime = 0;
-        public V requestBundle;//请求参数
+        public V requestData;//请求参数
         public T responseData;//请求结果集
         public Reference reference;//存放android 上下文(任何生命周期比较长的资源消耗大的实例都可以存放在此)
         public EventHandler target;
@@ -216,7 +215,7 @@ public class EventBuilder<V, T> {
             ev.receiverKey = receiverKey;
             ev.requestId = requestId;
             ev.sessionId = sessionId;
-            ev.requestBundle = requestBundle;
+            ev.requestData = requestData;
             ev.callback = callback;
             ev.reference = reference;
             ev.target = target;
@@ -320,7 +319,7 @@ public class EventBuilder<V, T> {
                     ", requestId=" + requestId +
                     ", receiverKey='" + receiverKey + '\'' +
                     ", sessionId='" + sessionId + '\'' +
-                    ", requestBundle=" + requestBundle.toString() +
+                    ", requestData=" + requestData.toString() +
                     ", responseData=" + responseData.toString() +
                     ", startTime=" + startTime +
                     ", endTime=" + endTime +

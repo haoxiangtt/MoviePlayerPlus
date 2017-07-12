@@ -87,8 +87,8 @@ public final class ContextReceiver implements EventReceiver<Bundle, Object>, Eve
 
     protected void goActivity(EventBuilder.Event<Bundle, Object> ev){
         Intent intent = getIntent(ev);
-        boolean forResult = ev.requestBundle.getBoolean(KEY_START_FOR_RESULT, false);
-        int requestCode = ev.requestBundle.getInt(KEY_REQUEST_CODE, 200);
+        boolean forResult = ev.requestData.getBoolean(KEY_START_FOR_RESULT, false);
+        int requestCode = ev.requestData.getInt(KEY_REQUEST_CODE, 200);
         if (ev.reference != null && ev.reference.get() != null
                 && ev.reference.get() instanceof  Context) {
             if (forResult) {
@@ -113,12 +113,12 @@ public final class ContextReceiver implements EventReceiver<Bundle, Object>, Eve
     protected void sendBroadcast(EventBuilder.Event<Bundle, Object> ev){
         Intent intent = getIntent(ev);
         if (ev.reference != null && ev.reference.get() != null) {
-            if (ev.requestBundle.getBoolean(KEY_LOCAL_BROACAST, false)) {
+            if (ev.requestData.getBoolean(KEY_LOCAL_BROACAST, false)) {
                 LocalBroadcastManager lbm = LocalBroadcastManager.getInstance((Context)ev.reference.get());
                 lbm.sendBroadcast(intent);
             } else {
                 Context context = ((Context)ev.reference.get());
-                if (!ev.requestBundle.getBoolean(KEY_STICKY_BROACAST, false)) {
+                if (!ev.requestData.getBoolean(KEY_STICKY_BROACAST, false)) {
                     context.sendBroadcast(intent);
                 } else {
                     context.sendStickyBroadcast(intent);
@@ -145,41 +145,41 @@ public final class ContextReceiver implements EventReceiver<Bundle, Object>, Eve
     }
 
     protected Intent getIntent(EventBuilder.Event<Bundle, Object> ev) {
-        Intent intent = ev.requestBundle.getParcelable(KEY_INTENT);
+        Intent intent = ev.requestData.getParcelable(KEY_INTENT);
         if (intent == null) {
             intent = new Intent();
-            intent.putExtra(KEY_BUNDLE, ev.requestBundle.getBundle(KEY_BUNDLE));
-            Serializable serializable = ev.requestBundle.getSerializable(KEY_CLASS);
-            String action = ev.requestBundle.getString(KEY_ACTION);
+            intent.putExtra(KEY_BUNDLE, ev.requestData.getBundle(KEY_BUNDLE));
+            Serializable serializable = ev.requestData.getSerializable(KEY_CLASS);
+            String action = ev.requestData.getString(KEY_ACTION);
             if (serializable != null) {
                 intent.setClass((Context) ev.reference.get(), (Class<?>) serializable);
-//                ev.requestBundle.remove(KEY_CLASS);
+//                ev.requestData.remove(KEY_CLASS);
             } else if (!TextUtils.isEmpty(action)) {
                 intent.setAction(action);
-//                ev.requestBundle.remove(KEY_ACTION);
+//                ev.requestData.remove(KEY_ACTION);
             } else {
                 throw new ContextNoActionException("start Context failed,there is no action or class to go!");
             }
 
-            Uri data = ev.requestBundle.getParcelable(KEY_DATA);
+            Uri data = ev.requestData.getParcelable(KEY_DATA);
             if (data != null) {
                 intent.setData(data);
-//                ev.requestBundle.remove(KEY_DATA);
+//                ev.requestData.remove(KEY_DATA);
             }
 
-            String type = ev.requestBundle.getString(KEY_TYPE);
+            String type = ev.requestData.getString(KEY_TYPE);
             if (!TextUtils.isEmpty(type)) {
                 intent.setType(type);
-//                ev.requestBundle.remove(KEY_TYPE);
+//                ev.requestData.remove(KEY_TYPE);
             }
 
-            String category = ev.requestBundle.getString(KEY_CATEGORY);
+            String category = ev.requestData.getString(KEY_CATEGORY);
             if (!TextUtils.isEmpty(category)) {
                 intent.addCategory(category);
-//                ev.requestBundle.remove(KEY_CATEGORY);
+//                ev.requestData.remove(KEY_CATEGORY);
             }
         } /*else {
-            ev.requestBundle.remove(KEY_INTENT);
+            ev.requestData.remove(KEY_INTENT);
         }*/
         return intent;
     }

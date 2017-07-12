@@ -64,6 +64,11 @@ public class ContextEventDispatcher extends BaseEventDispatcher {
                 return;
             }
             ContextReceiver.getReceiverInstance().onReceive(mEvent);
+            if (mEvent.getCallback() == null) {
+                if (mEvent.getInterceptor() != null) {
+                    mEvent.getInterceptor().intercept(Interceptor.EventState.END_WORKING, mEvent);
+                }
+            }
         }
     }
 

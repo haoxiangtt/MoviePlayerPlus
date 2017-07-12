@@ -113,6 +113,12 @@ public class BaseEventDispatcher implements EventDispatcher {
 
             receiver.onReceive(mEvent);
 
+            if (mEvent.getCallback() == null) {
+                if (mEvent.getInterceptor() != null) {
+                    mEvent.getInterceptor().intercept(Interceptor.EventState.END_WORKING, mEvent);
+                }
+            }
+
         }
     }
 

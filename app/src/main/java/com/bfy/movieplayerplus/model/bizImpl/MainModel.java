@@ -58,28 +58,28 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
         sb.append(callback);
         sb.append("&keyword=");
         try {
-            sb.append(URLEncoder.encode(ev.requestBundle.getString("keyword"), "UTF-8"));
+            sb.append(URLEncoder.encode(ev.requestData.getString("keyword"), "UTF-8"));
         } catch (UnsupportedEncodingException e) {
-            sb.append(URLEncoder.encode(ev.requestBundle.getString("keyword")));
+            sb.append(URLEncoder.encode(ev.requestData.getString("keyword")));
         }
         sb.append("&page=");
-        sb.append(ev.requestBundle.getString("page"));
+        sb.append(ev.requestData.getString("page"));
         sb.append("&pagesize=");
-        sb.append(ev.requestBundle.getString("pagesize"));
+        sb.append(ev.requestData.getString("pagesize"));
         sb.append("&userid=");
-        sb.append(ev.requestBundle.getString("userid"));
+        sb.append(ev.requestData.getString("userid"));
         sb.append("&clientver=");
-        sb.append(ev.requestBundle.getString("clientver"));
+        sb.append(ev.requestData.getString("clientver"));
         sb.append("&platform=");
-        sb.append(ev.requestBundle.getString("platform"));
+        sb.append(ev.requestData.getString("platform"));
         sb.append("&tag=");
-        sb.append(ev.requestBundle.getString("tag"));
+        sb.append(ev.requestData.getString("tag"));
         sb.append("&filter=");
-        sb.append(ev.requestBundle.getString("filter"));
+        sb.append(ev.requestData.getString("filter"));
         sb.append("&iscorrection=");
-        sb.append(ev.requestBundle.getString("iscorrection"));
+        sb.append(ev.requestData.getString("iscorrection"));
         sb.append("&privilege_filter=");
-        sb.append(ev.requestBundle.getString("privilege_filter"));
+        sb.append(ev.requestData.getString("privilege_filter"));
         sb.append("&_=");
         sb.append(String.valueOf(System.currentTimeMillis()));
         Map<String, String> headers = new HashMap<>();
@@ -137,10 +137,10 @@ public final class MainModel extends BaseModel implements MainBiz, EventReceiver
     public void getMVUrl(EventBuilder.Event event) {
         final EventBuilder.Event<Bundle, Object> ev = (EventBuilder.Event<Bundle, Object>)event;
         StringBuilder sb = new StringBuilder(Constant.KUGOU_MV_REAL_URL);
-        String md5 = Md5Coder.md5Lower(ev.requestBundle.getString("url") + "kugoumvcloud");
+        String md5 = Md5Coder.md5Lower(ev.requestData.getString("url") + "kugoumvcloud");
         sb.append("cmd=100");
         sb.append("&hash=");
-        sb.append(ev.requestBundle.getString("url"));
+        sb.append(ev.requestData.getString("url"));
         sb.append("&key=");
         sb.append(md5);
         sb.append("&pid=6");

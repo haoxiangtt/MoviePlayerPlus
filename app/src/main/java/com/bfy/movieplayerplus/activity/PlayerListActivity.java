@@ -165,7 +165,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 			.requestId(0)
 			.startTime(System.currentTimeMillis())
 			.target(EventHandler.getInstance())
-			.requestBundle(bundle)
+			.requestData(bundle)
 			.callback(new EventCallback<Bundle, EventJsonObject>() {
 				@Override
 				public  void call(EventBuilder.Event<Bundle, EventJsonObject> event) {
@@ -239,7 +239,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 				.requestId(ContextReceiver.REQUEST_GO_ACTIVITY)
 				.target(EventHandler.getInstance())
 				.reference(new WeakReference<Context>(PlayerListActivity.this))
-				.requestBundle(bundle)
+				.requestData(bundle)
 				.subscribeOn(Schedulers.ui())
 				.build().send();
 //			startActivity(intent);
@@ -263,7 +263,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 			.requestId(1)
 			.startTime(System.currentTimeMillis())
 			.target(EventHandler.getInstance())
-			.requestBundle(bundle)
+			.requestData(bundle)
 			.callback(new EventCallback<Bundle, EventJsonObject>() {
 				@Override
 				public void call(EventBuilder.Event<Bundle, EventJsonObject> event) {
@@ -304,7 +304,7 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 				.requestId(ContextReceiver.REQUEST_GO_ACTIVITY)
 				.target(EventHandler.getInstance())
 				.reference(new WeakReference<Context>(PlayerListActivity.this))
-				.requestBundle(bundle)
+				.requestData(bundle)
 				.subscribeOn(Schedulers.ui())
 				.build().send();
         }
