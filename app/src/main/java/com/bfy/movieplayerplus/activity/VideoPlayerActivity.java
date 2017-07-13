@@ -70,8 +70,8 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	
 	private ViewGroup mPlayerScreen;
 	private MediaPlayerController mPlayer;
-	private VLCVideoView mVlcPlayer;
-	private GlVideoView mDefaultPlayer;
+	private MediaPlayerController mVlcPlayer;
+	private MediaPlayerController mDefaultPlayer;
 	private ViewGroup mTitleBar;
 	private TextView mTVTitle;
 	private ViewGroup mBufferLoadingView;
@@ -213,8 +213,8 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 
 	private void init() {
 		//初始化控件
-		this.mVlcPlayer = (VLCVideoView) findViewById(R.id.pv_video);
-		this.mDefaultPlayer = (GlVideoView)findViewById(R.id.def_video);
+		this.mVlcPlayer = (MediaPlayerController) findViewById(R.id.pv_video);
+		this.mDefaultPlayer = (MediaPlayerController)findViewById(R.id.def_video);
 		
 		this.mPlayerScreen = (ViewGroup)findViewById(R.id.player_screen);
 		this.mTitleBar = (ViewGroup)findViewById(R.id.title_bar);
@@ -246,12 +246,12 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 				.getInt(PlayerListActivity.KEY_RECODER, 0);
 		if(mCurrentRecoder == RECORDER_DEFAULT){
 			this.mPlayer = mDefaultPlayer;
-			mDefaultPlayer.setVisibility(View.VISIBLE);
-			mVlcPlayer.setVisibility(View.GONE);
+			((View)mDefaultPlayer).setVisibility(View.VISIBLE);
+			((View)mVlcPlayer).setVisibility(View.GONE);
 		}else{
 			this.mPlayer = mVlcPlayer;
-			mVlcPlayer.setVisibility(View.VISIBLE);
-			mDefaultPlayer.setVisibility(View.GONE);
+			((View)mVlcPlayer).setVisibility(View.VISIBLE);
+			((View)mDefaultPlayer).setVisibility(View.GONE);
 		}	
 		//初始化组件
 		this.mHandler = new Handler(this);

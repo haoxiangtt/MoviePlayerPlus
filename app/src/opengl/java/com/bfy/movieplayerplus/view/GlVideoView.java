@@ -57,7 +57,7 @@ import javax.microedition.khronos.opengles.GL10;
  * @createDate : 2017/6/9 0009
  * @modifyDate : 2017/6/9 0009
  * @version    : 1.0
- * @desc       : GlVideoView class
+ * @desc       : GlVideoView class使用OpenGL渲染视频的播放控件
  * 				can load images from various sources (such as resources or content
  * 				providers), takes care of computing its measurement from the video so that
  * 				it can be used in any layout manager, and provides various display options
@@ -233,6 +233,8 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 	private void initVideoView() {
 		mVideoWidth = 0;
 		mVideoHeight = 0;
+
+		//一定要设置版本
 		setEGLContextClientVersion(2);
 		// 设置与当前GLSurfaceView绑定的Renderer
 		setRenderer(this);

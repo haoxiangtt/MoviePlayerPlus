@@ -43,6 +43,33 @@
 
         </activity>
 
+        <activity
+            android:name=".activity.VideoPlayerActivity"
+            android:label="@string/app_player"
+            android:screenOrientation="fullSensor"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:hardwareAccelerated="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <data
+                    android:mimeType="video/*"
+                    android:scheme="content" />
+                <data
+                    android:mimeType="video/*"
+                    android:scheme="http" />
+                <data
+                    android:mimeType="video/*"
+                    android:scheme="file" />
+                <!--
+                  <data android:mimeType="audio/*" android:scheme="http"/>
+                  <data android:mimeType="audio/*" android:scheme="file"/>
+                -->
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>

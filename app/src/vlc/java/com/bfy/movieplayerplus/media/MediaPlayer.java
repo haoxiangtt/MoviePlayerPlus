@@ -181,14 +181,16 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
         mSurfaceHolder = sh;
         mMediaPlayer.getVLCVout().setVideoSurface(sh.getSurface(), sh);
         mMediaPlayer.getVLCVout().attachViews();
+        updateSurfaceScreenOn();
     }
 
-    public void setSurface(Surface surface) {
+    public void setSurface(Surface surface, SurfaceHolder holder) {
         if (mScreenOnWhilePlaying && surface != null) {
             Log.w(TAG, "setScreenOnWhilePlaying(true) is ineffective for Surface");
         }
-        mSurfaceHolder = null;
-        mMediaPlayer.getVLCVout().setVideoSurface(surface, null);
+        mSurfaceHolder = holder;
+        mMediaPlayer.getVLCVout().setVideoSurface(surface, holder);
+        mMediaPlayer.getVLCVout().attachViews();
         updateSurfaceScreenOn();
     }
 
@@ -196,6 +198,7 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
         mSurfaceHolder = surfaceView.getHolder();
         mMediaPlayer.getVLCVout().setVideoView(surfaceView);
         mMediaPlayer.getVLCVout().attachViews();
+        updateSurfaceScreenOn();
     }
 
     public void setVideoScalingMode(int mode) {
