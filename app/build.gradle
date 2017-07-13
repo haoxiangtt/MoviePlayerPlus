@@ -56,7 +56,7 @@ android {
 
         vlc {
             manifest.srcFile 'src/vlc/AndroidManifest.xml'
-            java.srcDirs = ['src/vlc/java']
+            java.srcDirs = ['src/vlc/java', 'src/opengl/java']
             res.srcDirs = ['src/vlc/res']
             resources.srcDirs = ['src/vlc/java']
             aidl.srcDirs = ['src/vlc/java']

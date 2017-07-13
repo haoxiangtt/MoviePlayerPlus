@@ -4,9 +4,11 @@ import java.util.ArrayList;
 
 public interface MediaPlayerController {
 
+	//flag
 	int SCREEN_FULL = 0;
 	int SCREEN_DEFAULT = 1;
 
+	//mode
 	int SCALE_MODE_DEFAULT = 0;
 	int SCALE_MODE_16_9 = 1;
 	int SCALE_MODE_4_3 = 2;

@@ -6,6 +6,7 @@ import java.util.Date;
 import com.bfy.movieplayerplus.R;
 import com.bfy.movieplayerplus.utils.LogUtils;
 import com.bfy.movieplayerplus.utils.ScreenUtils;
+import com.bfy.movieplayerplus.view.GlVideoView;
 import com.bfy.movieplayerplus.view.MediaPlayerController;
 import com.bfy.movieplayerplus.view.OnChangeListener;
 import com.bfy.movieplayerplus.view.VLCVideoView;
@@ -70,7 +71,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	private ViewGroup mPlayerScreen;
 	private MediaPlayerController mPlayer;
 	private VLCVideoView mVlcPlayer;
-	private VideoView mDefaultPlayer;
+	private GlVideoView mDefaultPlayer;
 	private ViewGroup mTitleBar;
 	private TextView mTVTitle;
 	private ViewGroup mBufferLoadingView;
@@ -213,7 +214,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	private void init() {
 		//初始化控件
 		this.mVlcPlayer = (VLCVideoView) findViewById(R.id.pv_video);
-		this.mDefaultPlayer = (VideoView)findViewById(R.id.def_video);
+		this.mDefaultPlayer = (GlVideoView)findViewById(R.id.def_video);
 		
 		this.mPlayerScreen = (ViewGroup)findViewById(R.id.player_screen);
 		this.mTitleBar = (ViewGroup)findViewById(R.id.title_bar);

@@ -1,6 +1,8 @@
 package com.bfy.movieplayerplus;
 
 import android.app.Application;
+import android.content.Context;
+
 import com.bfy.movieplayerplus.event.ContextEventDispatcher;
 import com.bfy.movieplayerplus.event.ContextReceiver;
 import com.bfy.movieplayerplus.event.DefaultEventDispatcher;
@@ -26,9 +28,12 @@ import com.bfy.movieplayerplus.utils.Constant;
 public class MyApplication extends Application {
 
 
+    private static Context mContext;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        mContext = this;
         //初始化volley网络框架
         RequestManager.getInstance().init(this);
         //注册业务模型
@@ -43,4 +48,9 @@ public class MyApplication extends Application {
         EventFactory.getEventRegisterFactory().registDispatcher(Constant.EVENT_TYPE_CONTEXT, new ContextEventDispatcher());
 
     }
+
+    public static final Context getContext(){
+        return mContext;
+    }
+
 }
