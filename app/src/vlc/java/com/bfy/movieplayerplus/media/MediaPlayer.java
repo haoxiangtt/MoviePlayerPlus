@@ -40,6 +40,8 @@ import org.videolan.libvlc.Media;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
@@ -188,6 +190,7 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
         if (mScreenOnWhilePlaying && surface != null) {
             Log.w(TAG, "setScreenOnWhilePlaying(true) is ineffective for Surface");
         }
+        mMediaPlayer.getVLCVout().detachViews();
         mSurfaceHolder = holder;
         mMediaPlayer.getVLCVout().setVideoSurface(surface, holder);
         mMediaPlayer.getVLCVout().attachViews();
@@ -228,11 +231,31 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
     public void setWakeMode(Context context, int mode) {
         boolean washeld = false;
 
-        /* Disable persistant wakelocks in media player based on property */
+        try {
+            Class cls = Class.forName("android.os.SystemProperties");
+            Method method = cls.getDeclaredMethod("getBoolean", String.class, boolean.class);
+            Object obj = method.invoke(null, "audio.offload.ignore_setawake", false);
+            if ((boolean)obj == true) {
+                return;
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return;
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+            return;
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+            return;
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return;
+        }
 //        if (SystemProperties.getBoolean("audio.offload.ignore_setawake", false) == true) {
 //            Log.w(TAG, "IGNORING setWakeMode " + mode);
 //            return;
 //        }
+
 
         if (mWakeLock != null) {
             if (mWakeLock.isHeld()) {
@@ -276,6 +299,10 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
         if (mMediaPlayer.isSeekable()) {
             mMediaPlayer.setTime(msec);
         }
+    }
+
+    public boolean isSeekavble(){
+        return mMediaPlayer.isSeekable();
     }
 
     // This is of course, less precise than VLC

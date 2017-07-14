@@ -37,6 +37,7 @@ import android.widget.RadioGroup;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bfy.movieplayerplus.R;
@@ -48,6 +49,7 @@ import com.bfy.movieplayerplus.event.base.EventHandler;
 import com.bfy.movieplayerplus.event.base.Schedulers;
 import com.bfy.movieplayerplus.model.base.BaseModel;
 import com.bfy.movieplayerplus.utils.Constant;
+import com.bfy.movieplayerplus.utils.PackageUtil;
 import com.bfy.movieplayerplus.utils.PermissionUtils;
 
 import org.json.JSONArray;
@@ -390,8 +392,10 @@ public class PlayerListActivity extends AppCompatActivity implements OnItemClick
 		switch (id) {
 			case MENU_ACTION_ABOUT:{
 				AlertDialog d = new AlertDialog.Builder(this).create();
-				d.setView(getLayoutInflater().inflate(R.layout.about_layout,null), 0, 0, 0, 0);
-				
+				View view = getLayoutInflater().inflate(R.layout.about_layout,null);
+				TextView tvVersion = (TextView) view.findViewById(R.id.tv_version);
+				tvVersion.setText("当前版本：" + PackageUtil.getInstance(this).getVersionName());
+				d.setView(view, 0, 0, 0, 0);
 				return d;
 			}
 			case MENU_ACTION_SETTINGS:{

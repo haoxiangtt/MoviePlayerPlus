@@ -12,6 +12,7 @@ import com.bfy.movieplayerplus.view.OnChangeListener;
 import com.bfy.movieplayerplus.view.VLCVideoView;
 import com.bfy.movieplayerplus.view.VideoView;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -34,6 +35,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewStub;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
@@ -49,53 +51,52 @@ import android.view.animation.AnimationUtils;
 public class VideoPlayerActivity extends AppCompatActivity implements OnClickListener,Callback,
 						OnSeekBarChangeListener,OnChangeListener{
 
-	private static final String TAG = "VideoPlayerActivity";
-	private static final boolean DEBUG = LogUtils.isDebug;
-	private static final int RECORDER_DEFAULT = 0;
-	private static final int RECORDER_VLC = 1;
-	
-	private static final int HANDLE_HIDE_CONTROLLER = 0;
-	private static final int HANDLE_SHOW_CONTROLLER = 1;
-	private static final int HANDLE_SET_PROGRESS = 2;
+	protected static final String TAG = "VideoPlayerActivity";
+	protected static final boolean DEBUG = LogUtils.isDebug;
+	protected static final int RECORDER_DEFAULT = 0;
+	protected static final int RECORDER_VLC = 1;
 
-	private static final int DIALOG_ALERT_PLAY_POSITION = 0;
-	
-	private static final int CONTROLLER_DELAY_HIDE = 5000;
-	private static final long GUESTURE_CLICK_DURATION = 200;
-	private static final int DELTA_TO_TIME = 100;
-	private static final float MIN_DELTA = 50;
+	protected static final int HANDLE_HIDE_CONTROLLER = 0;
+	protected static final int HANDLE_SHOW_CONTROLLER = 1;
+	protected static final int HANDLE_SET_PROGRESS = 2;
+
+	protected static final int DIALOG_ALERT_PLAY_POSITION = 0;
+
+	protected static final int CONTROLLER_DELAY_HIDE = 5000;
+	protected static final long GUESTURE_CLICK_DURATION = 200;
+	protected static final int DELTA_TO_TIME = 100;
+	protected static final float MIN_DELTA = 50;
 	
 	public static final String RECORD_POSITION = "RECORD_POSITION";
 	public static final String PLAYER_SETTINGS = "PLAYER_SETTINGS";
-	
-	private ViewGroup mPlayerScreen;
-	private MediaPlayerController mPlayer;
-	private MediaPlayerController mVlcPlayer;
-	private MediaPlayerController mDefaultPlayer;
-	private ViewGroup mTitleBar;
-	private TextView mTVTitle;
-	private ViewGroup mBufferLoadingView;
-	private TextView mTVBuffer;
-	private TextView mTVMessage;
-	private ViewGroup mMessageView;
-	private ViewGroup mController;
-	private TextView mTVTime;
-	private TextView mTVLength;
-	private SeekBar mSeekBar;
-	private ImageButton mBackBtn;
-	private ImageButton mForwardBtn;
-	private ImageButton mTogglePlayBtn;
-	
-	private Handler mHandler;
-	
-	private int mCurrentRecoder = RECORDER_VLC;
-	private boolean isSeekbarStartTrackingTouch = false;//判定用户正在调整播放进度
-	private boolean isPlayOnce = false;
-	private boolean isRecordPosition = true;//是否记录播放点
-	
-	private long mStartTime = 0;
-	private float mLastX = 0;
 
+	protected ViewGroup mPlayerScreen;
+	protected MediaPlayerController mPlayer;
+	protected ViewGroup mTitleBar;
+	protected TextView mTVTitle;
+	protected ViewGroup mBufferLoadingView;
+	protected TextView mTVBuffer;
+	protected TextView mTVMessage;
+	protected ViewGroup mMessageView;
+	protected ViewGroup mController;
+	protected TextView mTVTime;
+	protected TextView mTVLength;
+	protected SeekBar mSeekBar;
+	protected ImageButton mBackBtn;
+	protected ImageButton mForwardBtn;
+	protected ImageButton mTogglePlayBtn;
+
+	protected Handler mHandler;
+
+	protected int mCurrentRecoder = RECORDER_VLC;
+	protected boolean isSeekbarStartTrackingTouch = false;//判定用户正在调整播放进度
+	protected boolean isPlayOnce = false;
+	protected boolean isRecordPosition = true;//是否记录播放点
+
+	protected long mStartTime = 0;
+	protected float mLastX = 0;
+
+	protected boolean readOnce;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +104,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.video_player_layout);
+		readOnce = true;
 		init();
 		handleIntent();
 	}
@@ -119,14 +121,19 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	protected void onResume() {
 		super.onResume();
 		if(DEBUG){ Log.i(TAG, "on avtibity resume........"); }
-		if(!this.mPlayer.isPlaying()){
+		if(!mPlayer.isPlaying()){
 			if(DEBUG){ Log.i(TAG, "on player start........"); }
-			this.mPlayer.start();
+			mPlayer.start();
 			if(DEBUG){ Log.i(TAG, "on to position........"); }
 			long position = readPosition();
-			if(position != 0){ 
-				showDialog(DIALOG_ALERT_PLAY_POSITION, null);
+			if(position != 0){
+                if (readOnce) {
+                    showDialog(DIALOG_ALERT_PLAY_POSITION, null);
+                } else {
+                    mPlayer.setTime(position);
+                }
 			}
+            readOnce = false;
 			mHandler.sendEmptyMessage(HANDLE_SET_PROGRESS);
 			mHandler.sendEmptyMessage(HANDLE_SHOW_CONTROLLER);
 			if(DEBUG){ Log.i(TAG, "on avtibity start........"); }
@@ -161,7 +168,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 		if(DEBUG){ Log.i(TAG, "on avtibity pause........"); }
 		if(this.mPlayer.isPlaying()){
 			if(isRecordPosition){ recordPosition(this.mPlayer.getTime()); }
-			this.mPlayer.stop();
+			this.mPlayer.pause();
 		}
 		mHandler.removeMessages(HANDLE_SET_PROGRESS);
 		super.onPause();
@@ -211,55 +218,59 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	 * ************************private mathods*****************************
 	 */
 
-	private void init() {
-		//初始化控件
-		this.mVlcPlayer = (MediaPlayerController) findViewById(R.id.pv_video);
-		this.mDefaultPlayer = (MediaPlayerController)findViewById(R.id.def_video);
-		
-		this.mPlayerScreen = (ViewGroup)findViewById(R.id.player_screen);
-		this.mTitleBar = (ViewGroup)findViewById(R.id.title_bar);
-		this.mTVTitle = (TextView)findViewById(R.id.tv_title);
-		this.mBufferLoadingView = (ViewGroup)findViewById(R.id.rl_loading);
-		this.mTVBuffer = (TextView)findViewById(R.id.tv_buffer);
-		this.mTVMessage = (TextView)findViewById(R.id.tv_message);
-		this.mMessageView = (ViewGroup)findViewById(R.id.rl_message);
-		this.mController = (ViewGroup)findViewById(R.id.controller);
-		
-		this.mTVTime = (TextView)this.mController.findViewById(R.id.tv_time);
-		this.mTVLength = (TextView)this.mController.findViewById(R.id.tv_length);
-		this.mSeekBar = (SeekBar)this.mController.findViewById(R.id.sb_video);
-		this.mTogglePlayBtn = (ImageButton)this.mController.findViewById(R.id.ib_play);
-		this.mBackBtn = (ImageButton)this.mController.findViewById(R.id.ib_backward);
-		this.mForwardBtn = (ImageButton)this.mController.findViewById(R.id.ib_forward);
-		
-		//添加响应时间
-		//this.mPlayerScreen.setOnTouchListener(this);
-		this.mTogglePlayBtn.setOnClickListener(this);
-		this.mBackBtn.setOnClickListener(this);
-		this.mForwardBtn.setOnClickListener(this);
-		this.mSeekBar.setOnSeekBarChangeListener(this);
-		this.mVlcPlayer.setOnChangeListener(this);
-		this.mDefaultPlayer.setOnChangeListener(this);
-		
-		//确定解码器
-		mCurrentRecoder = getSharedPreferences(PlayerListActivity.MAIN_SETTINGS, MODE_PRIVATE)
-				.getInt(PlayerListActivity.KEY_RECODER, 0);
-		if(mCurrentRecoder == RECORDER_DEFAULT){
-			this.mPlayer = mDefaultPlayer;
-			((View)mDefaultPlayer).setVisibility(View.VISIBLE);
-			((View)mVlcPlayer).setVisibility(View.GONE);
-		}else{
-			this.mPlayer = mVlcPlayer;
-			((View)mVlcPlayer).setVisibility(View.VISIBLE);
-			((View)mDefaultPlayer).setVisibility(View.GONE);
-		}	
+	protected void init() {
 		//初始化组件
-		this.mHandler = new Handler(this);
-		
+		mHandler = new Handler(this);
+
+		//初始化控件
+		initView();
+
+		//确定解码器
+		comfirmPlayer();
+
 	}
 
-	
-	private void handleIntent() {
+	protected void initView() {
+		mTitleBar = (ViewGroup)findViewById(R.id.title_bar);
+		mTVTitle = (TextView)findViewById(R.id.tv_title);
+		mBufferLoadingView = (ViewGroup)findViewById(R.id.rl_loading);
+		mTVBuffer = (TextView)findViewById(R.id.tv_buffer);
+		mTVMessage = (TextView)findViewById(R.id.tv_message);
+		mMessageView = (ViewGroup)findViewById(R.id.rl_message);
+		mController = (ViewGroup)findViewById(R.id.controller);
+
+		mTVTime = (TextView)this.mController.findViewById(R.id.tv_time);
+		mTVLength = (TextView)this.mController.findViewById(R.id.tv_length);
+		mSeekBar = (SeekBar)this.mController.findViewById(R.id.sb_video);
+		mTogglePlayBtn = (ImageButton)this.mController.findViewById(R.id.ib_play);
+		mBackBtn = (ImageButton)this.mController.findViewById(R.id.ib_backward);
+		mForwardBtn = (ImageButton)this.mController.findViewById(R.id.ib_forward);
+
+		//添加响应事件
+		mTogglePlayBtn.setOnClickListener(this);
+		mBackBtn.setOnClickListener(this);
+		mForwardBtn.setOnClickListener(this);
+		mSeekBar.setOnSeekBarChangeListener(this);
+	}
+
+	@SuppressLint("WrongViewCast")
+	protected void comfirmPlayer() {
+		mCurrentRecoder = getSharedPreferences(PlayerListActivity.MAIN_SETTINGS, MODE_PRIVATE)
+				.getInt(PlayerListActivity.KEY_RECODER, 0);
+		if (mCurrentRecoder == RECORDER_DEFAULT) {
+			ViewStub wsDefault = (ViewStub) findViewById(R.id.ws_default);
+			mPlayerScreen = (ViewGroup)wsDefault.inflate();
+			mPlayer = (MediaPlayerController)findViewById(R.id.def_video);
+		} else {
+			ViewStub wsVlc = (ViewStub) findViewById(R.id.ws_vlc);
+			mPlayerScreen = (ViewGroup)wsVlc.inflate();
+			mPlayer = (MediaPlayerController) findViewById(R.id.pv_video);
+		}
+		mPlayer.setOnChangeListener(this);
+	}
+
+
+	protected void handleIntent() {
 		Intent intent = getIntent();
 		Uri uri = intent.getData();
 
@@ -581,7 +592,9 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 		if(this.isPlayOnce){
 			finish();
 		}else{
-			if(!this.mPlayer.playNext()){ finish(); }
+			if(!this.mPlayer.playNext()){
+				finish();
+			}
 		}
 		
 	}

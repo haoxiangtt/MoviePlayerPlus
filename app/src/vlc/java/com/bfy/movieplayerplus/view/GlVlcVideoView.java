@@ -20,10 +20,10 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.MediaController;
 
+import com.bfy.movieplayerplus.BuildConfig;
 import com.bfy.movieplayerplus.media.MediaPlayer;
 import com.bfy.movieplayerplus.utils.DirectDrawer;
 import com.bfy.movieplayerplus.utils.GlUtil;
-import com.bfy.movieplayerplus.utils.LogUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +48,7 @@ import javax.microedition.khronos.opengles.GL10;
 public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerController
         , GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener{
 
-    private static final boolean DEBUG = LogUtils.isDebug;
+    private static final boolean DEBUG = BuildConfig.DEBUG;
     private static final String TAG = "VideoView";
     //  private static final String RECORD_POINT = "RECORD_POINT_DATA";
 
@@ -115,16 +115,18 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
                 // we need), so we won't get a "surface changed" callback, so
                 // start the video here instead of in the callback.
 //	                	if(DEBUG) Log.i(TAG, " if mStartWhenPrepared : " + mStartWhenPrepared);
-                if (mSeekWhenPrepared != 0) {
-                    mMediaPlayer.seekTo(mSeekWhenPrepared);
-                    mSeekWhenPrepared = 0;
-                }
 
                 if (mStartWhenPrepared) {
                     mMediaPlayer.start();
                     mStartWhenPrepared = false;
 
                 }
+
+                if (mSeekWhenPrepared != 0) {
+                    mMediaPlayer.seekTo(mSeekWhenPrepared);
+                    mSeekWhenPrepared = 0;
+                }
+
                 if (mMediaController != null) {
                     mMediaController.show();
                 }
@@ -132,16 +134,18 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
             } else {
                 // We don't know the video size yet, but should start anyway.
                 // The video size might be reported to us later.
+
+                if (mStartWhenPrepared) {
+                    mMediaPlayer.start();
+                    mStartWhenPrepared = false;
+                }
+
                 if(DEBUG) Log.i(TAG, " else mStartWhenPrepared : " + mStartWhenPrepared);
                 if (mSeekWhenPrepared != 0) {
                     mMediaPlayer.seekTo(mSeekWhenPrepared);
                     mSeekWhenPrepared = 0;
                 }
 
-                if (mStartWhenPrepared) {
-                    mMediaPlayer.start();
-                    mStartWhenPrepared = false;
-                }
             }
         }
     };
@@ -471,6 +475,7 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
         mOnChangeListener = listener;
     }
 
+    @Override
     public void initPlayer(Uri uri) {
 //			LibVLC.getInstance().init(mContext);
         mMediaList = new ArrayList<String>();
@@ -519,7 +524,9 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
 
     @Override
     public void play() {
-        mMediaPlayer.start();
+        if (mMediaPlayer != null && mIsPrepared) {
+            mMediaPlayer.start();
+        }
     }
 
     @Override
@@ -536,7 +543,7 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
     @Override
     public void stop() {
         if(DEBUG) Log.i(TAG, "enter Stop method:"+mMediaPlayer);
-        if (mMediaPlayer != null) {
+        if (mMediaPlayer != null && mIsPrepared) {
             if(DEBUG) Log.i(TAG, "stop media play................");
             //long t = getTime();
             //recordPosition(t);
@@ -547,6 +554,9 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
     @Override
     public void destroy(){
         if(mMediaPlayer != null){
+            if (isPlaying()) {
+                mMediaPlayer.stop();
+            }
             mMediaPlayer.reset();
             mMediaPlayer.release();
             //this.invalidate();
@@ -605,7 +615,10 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
 
     @Override
     public boolean canSeekble() {
-        return true;
+        if (mMediaPlayer != null) {
+            return mMediaPlayer.isSeekavble();
+        }
+        return false;
     }
 
 
@@ -626,7 +639,7 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
             if(DEBUG){ e.printStackTrace(); }
             return false;
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -645,7 +658,7 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
             if(DEBUG){ e.printStackTrace(); }
             return false;
         }
-        return false;
+        return true;
     }
 
 
@@ -661,17 +674,21 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
 
 
 
-
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        LogUtils.i(TAG, "onFrameAvailable...");
+        if (DEBUG) {
+            Log.i(TAG, "onFrameAvailable...");
+        }
+
         mUpdateSurface = true;
         requestRender();
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        LogUtils.i(TAG, "onSurfaceCreated...");
+        if (DEBUG) {
+            Log.i(TAG, "onSurfaceCreated...");
+        }
         mTextureID = GlUtil.createTextureID();
         mSurface = new SurfaceTexture(mTextureID);
         mSurface.setOnFrameAvailableListener(this);
@@ -683,7 +700,9 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        LogUtils.i(TAG, "onSurfaceChanged...");
+        if (DEBUG) {
+            Log.i(TAG, "onSurfaceChanged...");
+        }
         mSurfaceWidth = width;
         mSurfaceHeight = height;
         // 设置OpenGL场景的大小,(0,0)表示窗口内部视口的左下角，(w,h)指定了视口的大小
@@ -701,7 +720,9 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        LogUtils.i(TAG, "onDrawFrame...");
+        if (DEBUG) {
+            Log.i(TAG, "onDrawFrame...");
+        }
         // 设置白色为清屏
         GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         // 清除屏幕和深度缓存

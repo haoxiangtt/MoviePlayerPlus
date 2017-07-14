@@ -10,7 +10,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-         ndk {
+        ndk {
             //选择要添加的对应cpu类型的.so库。
             abiFilters 'x86_64', 'armeabi-v7a', 'arm64-v8a'
             // 还可以添加 'armeabi', 'x86', 'mips', 'mips64'
@@ -20,8 +20,9 @@ android {
 
     productFlavors{
         vlc{
-            versionCode 2
-            versionName '1.1.1'
+            applicationId "com.bfy.movieplayerplus.vlc"
+            versionCode 3
+            versionName '1.2.0'
         }
     }
 
@@ -57,7 +58,7 @@ android {
         vlc {
             manifest.srcFile 'src/vlc/AndroidManifest.xml'
             java.srcDirs = ['src/vlc/java', 'src/opengl/java']
-            res.srcDirs = ['src/vlc/res']
+            res.srcDirs = ['src/vlc/res', 'src/opengl/res']
             resources.srcDirs = ['src/vlc/java']
             aidl.srcDirs = ['src/vlc/java']
             renderscript.srcDirs = ['src/vlc/java']

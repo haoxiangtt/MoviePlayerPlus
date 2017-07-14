@@ -2,13 +2,13 @@ package com.bfy.movieplayerplus.view;
 
 public interface OnChangeListener {
 
-	public void onBufferChanged(float buffer);
+	void onBufferChanged(float buffer);
 	
-	public void onPositionChanged(long progress);
+	void onPositionChanged(long progress);
 
-	public void onLoadComplet();
+	void onLoadComplet();
 
-	public void onError();
+	void onError();
 
-	public void onEnd();
+	void onEnd();
 }

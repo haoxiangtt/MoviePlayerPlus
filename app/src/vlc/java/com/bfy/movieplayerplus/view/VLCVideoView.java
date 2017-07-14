@@ -15,12 +15,11 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.MediaController;
 
+import com.bfy.movieplayerplus.BuildConfig;
 import com.bfy.movieplayerplus.media.MediaPlayer;
-import com.bfy.movieplayerplus.utils.LogUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +39,7 @@ import java.util.ArrayList;
  */
 public class VLCVideoView extends SurfaceView implements MediaPlayerController{
 
-    private static final boolean DEBUG = LogUtils.isDebug;
+    private static final boolean DEBUG = BuildConfig.DEBUG;
     private static final String TAG = "VideoView";
     //  private static final String RECORD_POINT = "RECORD_POINT_DATA";
 
@@ -125,21 +124,18 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
                 // we need), so we won't get a "surface changed" callback, so
                 // start the video here instead of in the callback.
 //	                	if(DEBUG) Log.i(TAG, " if mStartWhenPrepared : " + mStartWhenPrepared);
-                if (mSeekWhenPrepared != 0) {
-                    mMediaPlayer.seekTo(mSeekWhenPrepared);
-                    mSeekWhenPrepared = 0;
-                }
 
                 if (mStartWhenPrepared) {
                     mMediaPlayer.start();
                     mStartWhenPrepared = false;
 
-                }/* else if (!isPlaying() &&
-	                            (mSeekWhenPrepared != 0 || getTime() > 0)) {
-	                       if (mMediaController != null) {
-	                           mMediaController.show(0);
-	                       }
-	                   	}*/
+                }
+
+                if (mSeekWhenPrepared != 0) {
+                    mMediaPlayer.seekTo(mSeekWhenPrepared);
+                    mSeekWhenPrepared = 0;
+                }
+
                 if (mMediaController != null) {
                     mMediaController.show();
                 }
@@ -147,16 +143,18 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
             } else {
                 // We don't know the video size yet, but should start anyway.
                 // The video size might be reported to us later.
+
+                if (mStartWhenPrepared) {
+                    mMediaPlayer.start();
+                    mStartWhenPrepared = false;
+                }
+
                 if(DEBUG) Log.i(TAG, " else mStartWhenPrepared : " + mStartWhenPrepared);
                 if (mSeekWhenPrepared != 0) {
                     mMediaPlayer.seekTo(mSeekWhenPrepared);
                     mSeekWhenPrepared = 0;
                 }
 
-                if (mStartWhenPrepared) {
-                    mMediaPlayer.start();
-                    mStartWhenPrepared = false;
-                }
             }
 
 	            /*if (mOnPreparedListener != null) {
@@ -226,17 +224,6 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
             if(DEBUG) Log.i(TAG, "serface change...width = " + w + "height = " + h );
             mSurfaceWidth = w;
             mSurfaceHeight = h;
-            //	        if (mMediaPlayer != null && mIsPrepared && mVideoWidth == w && mVideoHeight == h) {
-            //	            if (mSeekWhenPrepared != 0) {
-            //	            	//Log.i(TAG, "read Position : " + mSeekWhenPrepared);
-            //	                mMediaPlayer.seekTo(mSeekWhenPrepared);
-            //	                mSeekWhenPrepared = 0;
-            //	            }
-            //	          //  mMediaPlayer.start();
-            //	            if (mMediaController != null) {
-            //	                mMediaController.show();
-            //	            }
-            //	        }
         }
 
         @Override
@@ -250,8 +237,11 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
         public void surfaceDestroyed(SurfaceHolder holder){
             // after we return from this we can't use the surface any more
             mSurfaceHolder = null;
+            mSeekWhenPrepared = (int)getTime();
+            mIsPrepared = false;
             if(DEBUG)  Log.w(TAG, "the surface destroy..............");
             if(mMediaController != null) mMediaController.hide();
+
             stop();
         }
     };
@@ -520,6 +510,7 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
         mOnChangeListener = listener;
     }
 
+    @Override
     public void initPlayer(Uri uri) {
 //			LibVLC.getInstance().init(mContext);
         mMediaList = new ArrayList<String>();
@@ -568,7 +559,9 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
 
     @Override
     public void play() {
-        mMediaPlayer.start();
+        if (mMediaPlayer != null && mIsPrepared) {
+            mMediaPlayer.start();
+        }
     }
 
     @Override
@@ -585,17 +578,20 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
     @Override
     public void stop() {
         if(DEBUG) Log.i(TAG, "enter Stop method:"+mMediaPlayer);
-        if (mMediaPlayer != null) {
+        if (mMediaPlayer != null && mIsPrepared) {
             if(DEBUG) Log.i(TAG, "stop media play................");
-            //long t = getTime();
-            //recordPosition(t);
-            mMediaPlayer.stop();
+            if (mMediaPlayer.isPlaying()) {
+                mMediaPlayer.stop();
+            }
         }
     }
 
     @Override
     public void destroy(){
         if(mMediaPlayer != null){
+            if (isPlaying()) {
+                mMediaPlayer.stop();
+            }
             mMediaPlayer.reset();
             mMediaPlayer.release();
             //this.invalidate();
@@ -654,7 +650,10 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
 
     @Override
     public boolean canSeekble() {
-        return true;
+        if (mMediaPlayer != null) {
+            return mMediaPlayer.isSeekavble();
+        }
+        return false;
     }
 
 
@@ -675,7 +674,7 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
             if(DEBUG){ e.printStackTrace(); }
             return false;
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -694,7 +693,7 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
             if(DEBUG){ e.printStackTrace(); }
             return false;
         }
-        return false;
+        return true;
     }
 
 

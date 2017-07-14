@@ -34,7 +34,7 @@ import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.MediaController;
 
-import com.bfy.movieplayerplus.utils.LogUtils;
+import com.bfy.movieplayerplus.BuildConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +49,7 @@ import java.util.ArrayList;
  */
 public class VideoView extends SurfaceView implements MediaPlayerController{
 
-	private static final boolean DEBUG = LogUtils.isDebug;
+	private static final boolean DEBUG = BuildConfig.DEBUG;
     private static final String TAG = "VideoView";
 
     private Context mContext;
@@ -57,6 +57,7 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
     private Uri         mCurrentUri;
     private int         mDuration;
     private int			mCurrentIndex;
+	private int			mPosition = -1;
 
     // All the stuff we need for playing and showing a video
     private SurfaceHolder mSurfaceHolder = null;
@@ -119,45 +120,48 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 	            mVideoWidth = mp.getVideoWidth();
 	            mVideoHeight = mp.getVideoHeight();
 	            if (mVideoWidth != 0 && mVideoHeight != 0) {
-	                if(DEBUG) Log.i(TAG, "video size: " + mVideoWidth +"/"+ mVideoHeight);
+	                if(DEBUG) {
+						Log.i(TAG, "video size: " + mVideoWidth + "/" + mVideoHeight);
+					}
 	                setVideoScale(SCREEN_FULL, SCALE_MODE_DEFAULT);
 //	                if (mSurfaceWidth == mVideoWidth && mSurfaceHeight == mVideoHeight) {
 	                    // We didn't actually change the size (it was already at the size
 	                    // we need), so we won't get a "surface changed" callback, so
 	                    // start the video here instead of in the callback.
-//	                	if(DEBUG) Log.i(TAG, " if mStartWhenPrepared : " + mStartWhenPrepared);
-	                    if (mSeekWhenPrepared != 0) {
-	                        mMediaPlayer.seekTo(mSeekWhenPrepared);
-	                        mSeekWhenPrepared = 0;
-	                    }
-	                   
-	                   if (mStartWhenPrepared) {
-	                        mMediaPlayer.start();
-	                        mStartWhenPrepared = false;
-	                        
-	                    }/* else if (!isPlaying() &&
-	                            (mSeekWhenPrepared != 0 || getTime() > 0)) {
-	                       if (mMediaController != null) {
-	                           mMediaController.show(0);
-	                       }
-	                   	}*/
-		                if (mMediaController != null) {
-	                         mMediaController.show();
-	                    }
-//	                }
+
+				   if (mStartWhenPrepared) {
+						mMediaPlayer.start();
+						mStartWhenPrepared = false;
+
+					}
+
+					if (mSeekWhenPrepared != 0) {
+						mMediaPlayer.seekTo(mSeekWhenPrepared);
+						mSeekWhenPrepared = 0;
+					}
+
+					if (mMediaController != null) {
+						 mMediaController.show();
+					}
 	            } else {
 	                // We don't know the video size yet, but should start anyway.
 	                // The video size might be reported to us later.
 	            	if(DEBUG) Log.i(TAG, " else mStartWhenPrepared : " + mStartWhenPrepared);
-	                if (mSeekWhenPrepared != 0) {
-	                    mMediaPlayer.seekTo(mSeekWhenPrepared);
-	                    mSeekWhenPrepared = 0;
-	                }
-	                
+
 	                if (mStartWhenPrepared) {
 	                    mMediaPlayer.start();
 	                    mStartWhenPrepared = false;
 	                }
+
+					if (mSeekWhenPrepared != 0) {
+						mMediaPlayer.seekTo(mSeekWhenPrepared);
+						mSeekWhenPrepared = 0;
+					}
+
+					if (mMediaController != null) {
+						mMediaController.show();
+					}
+
 	            }
 	            
 	            /*if (mOnPreparedListener != null) {
@@ -169,10 +173,13 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 	private MediaPlayer.OnCompletionListener mCompletionListener =
 	  new MediaPlayer.OnCompletionListener() {
 	    public void onCompletion(MediaPlayer mp) {
+			if(DEBUG) {
+				Log.i(TAG, "playing complete!!!!!!!!!!!!");
+			}
 	        if (mMediaController != null) {
 	            mMediaController.hide();
 	        }
-	     if(DEBUG)  Log.i(TAG, "playing complete!!!!!!!!!!!!");
+
 	     	stop();
 	     	//recordPosition(0);
 	        if (mOnChangeListener != null) {
@@ -225,21 +232,10 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 		    	if(DEBUG) Log.i(TAG, "serface change...width = " + w + "height = " + h );
 		        mSurfaceWidth = w;
 		        mSurfaceHeight = h;
-	//	        if (mMediaPlayer != null && mIsPrepared && mVideoWidth == w && mVideoHeight == h) {
-	//	            if (mSeekWhenPrepared != 0) {
-	//	            	//Log.i(TAG, "read Position : " + mSeekWhenPrepared);
-	//	                mMediaPlayer.seekTo(mSeekWhenPrepared);
-	//	                mSeekWhenPrepared = 0;
-	//	            }
-	//	          //  mMediaPlayer.start();
-	//	            if (mMediaController != null) {
-	//	                mMediaController.show();
-	//	            }
-	//	        }  
 		    }
 		
 		public void surfaceCreated(SurfaceHolder holder){
-			if(DEBUG) Log.i(TAG, "callback Create!.......................");
+			if(DEBUG) Log.w(TAG, "the surfaceview Create!.......................");
 			mSurfaceHolder = holder;
 			openVideo();
 		}
@@ -247,7 +243,9 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 		public void surfaceDestroyed(SurfaceHolder holder){
 			// after we return from this we can't use the surface any more
 		    mSurfaceHolder = null;
-		    if(DEBUG)  Log.w(TAG, "the surface destroy..............");
+			mSeekWhenPrepared = (int)getTime();
+			mIsPrepared = false;
+		    if(DEBUG)  Log.w(TAG, "the surfaceview destroy..............");
 		    if(mMediaController != null) mMediaController.hide();
 		    stop(); 
 		}
@@ -281,7 +279,7 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 
 	private void openVideo() {
 	
-	        if (mCurrentUri == null || mSurfaceHolder == null) {
+	        if (mCurrentUri == null) {
 	            return;
 	        }
 	        if(DEBUG) Log.i(TAG, "Uri Scheme : " + mCurrentUri.getScheme()
@@ -426,7 +424,9 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 				scale = adjustScale(mWidth, mHeight, 0, 0);
 			}
 		}
-		if (DEBUG) LogUtils.i(TAG, "the scale =(" + scale[0] + ":" + scale[1] + ")");
+		if (DEBUG) {
+			Log.i(TAG, "the scale =(" + scale[0] + ":" + scale[1] + ")");
+		}
 		setScale(scale[0], scale[1]);
     }
 
@@ -515,7 +515,8 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
     public void setOnChangeListener(OnChangeListener listener) {
     	mOnChangeListener = listener;
     }
-    
+
+	@Override
     public void initPlayer(Uri uri) {
 //			LibVLC.getInstance().init(mContext);
 		mMediaList = new ArrayList<String>();
@@ -564,7 +565,9 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 	
 	@Override
 	public void play() {
-		mMediaPlayer.start();
+		if (mMediaPlayer != null && mIsPrepared) {
+			mMediaPlayer.start();
+		}
 	}
 	
     @Override
@@ -581,7 +584,7 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
     @Override
     public void stop() {
 		if(DEBUG) Log.i(TAG, "enter Stop method:"+mMediaPlayer);
-	    if (mMediaPlayer != null) {
+	    if (mMediaPlayer != null && mIsPrepared) {
 	    	if(DEBUG) Log.i(TAG, "stop media play................");
 	    	//long t = getTime();
 	    	//recordPosition(t);
@@ -592,6 +595,9 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
     @Override
     public void destroy(){
     	if(mMediaPlayer != null){
+			if (isPlaying()) {
+				mMediaPlayer.stop();
+			}
 	    	mMediaPlayer.reset();
 	    	mMediaPlayer.release();
 		    //this.invalidate();
@@ -671,7 +677,7 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 			if(DEBUG){ e.printStackTrace(); }
 			return false;
 		}
-		return false;
+		return true;
 	}
 
 	@Override
@@ -690,7 +696,7 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 			if(DEBUG){ e.printStackTrace(); }
 			return false;
 		}
-		return false;
+		return true;
 	}
 
 

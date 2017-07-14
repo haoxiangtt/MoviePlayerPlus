@@ -1,5 +1,7 @@
 package com.bfy.movieplayerplus.view;
 
+import android.net.Uri;
+
 import java.util.ArrayList;
 
 public interface MediaPlayerController {
@@ -16,6 +18,7 @@ public interface MediaPlayerController {
 
 	boolean canSeekble();
 	void initPlayer(String url);
+	void initPlayer(Uri uri);
 	void initPlayer(ArrayList<String> list);
 	void initPlayer(ArrayList<String> list,int index);
 	void start();
