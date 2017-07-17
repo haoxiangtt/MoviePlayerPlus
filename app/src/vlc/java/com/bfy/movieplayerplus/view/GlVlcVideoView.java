@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -53,6 +54,7 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
     //  private static final String RECORD_POINT = "RECORD_POINT_DATA";
 
     private Context mContext;
+    private Handler mHandler;
     private ArrayList<String> mMediaList;
     private Uri mCurrentUri;
     private int         mDuration;
@@ -84,6 +86,7 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
     public GlVlcVideoView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
+        mHandler = new Handler();
         initVideoView();
     }
 
@@ -256,7 +259,7 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
 //	        	begin playing video.........................................
             mDuration = -1;
             mIsPrepared = false;
-            mMediaPlayer = new MediaPlayer();
+            mMediaPlayer = new MediaPlayer(mContext);
             mMediaPlayer.setOnPreparedListener(mPreparedListener);
             mMediaPlayer.setOnVideoSizeChangedListener(mSizeChangedListener);
             mMediaPlayer.setOnCompletionListener(mCompletionListener);
@@ -276,15 +279,11 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
         } catch (IOException ex) {
             Log.w(TAG, "Unable to open content: " + mCurrentUri, ex);
             return;
-        } catch (IllegalArgumentException ex) {
-            Log.w(TAG, "Unable to open content: " + mCurrentUri, ex);
-            return;
         }
     }
 
     private void setScale(int width , int height){
 //        modify bu ouyangjinfu, don't fix size
-//        getHolder().setFixedSize(width, height);
         ViewGroup.LayoutParams lp = getLayoutParams();
         lp.height = height;
         lp.width = width;
@@ -295,10 +294,10 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
         int[] scale = new int[]{cw,ch};
         if(vh <= 0 || vw <= 0) return scale;
         if(ch * vw > cw * vh){
-            //Log.i(TAG, "image too tall, correcting");
+            //Log.i(TAG, "video too wide, correcting");
             scale[1] = cw * vh / vw;
         }else if(ch * vw < cw * vh){
-            //Log.i(TAG, "image too wide, correcting");
+            //Log.i(TAG, "video too tall, correcting");
             scale[0] = ch * vw / vh;
         }
         return scale;
@@ -694,7 +693,16 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
         mSurface.setOnFrameAvailableListener(this);
         mDirectDrawer = new DirectDrawer(mTextureID);
 //		CameraCapture.get().openBackCamera();
-        openVideo();
+        /*
+         *用vlc播放器时，不知道为什么在调整屏幕尺寸时不能在GLThread线程中执行,
+        */
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                openVideo();
+            }
+        });
+
     }
 
 
@@ -709,13 +717,13 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
 //		if (!CameraCapture.get().isPreviewing()) {
 //			CameraCapture.get().doStartPreview(mSurface);
 //		}
-        //下列代码意义为使绘制区域适应视频尺寸
+        //下列代码意义为使绘制区域适应视频尺寸, 我们这里统一设置成占满整个控件, 尺寸的调整交给setVideoScale方法
         float screenRatio=width*1f/height;//屏幕宽高比
         float videoRatio=width*1f/height;//视频宽高比
         if (videoRatio>screenRatio){
             Matrix.orthoM(mDirectDrawer.mMVP,0,-1f,1f,-videoRatio/screenRatio,videoRatio/screenRatio,-1f,1f);
         }else Matrix.orthoM(mDirectDrawer.mMVP,0,-screenRatio/videoRatio,screenRatio/videoRatio,-1f,1f,-1f,1f);
-
+        GLES20.glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
     }
 
     @Override
@@ -735,7 +743,6 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
                 mUpdateSurface = false;
             }
         }
-        GLES20.glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
         mDirectDrawer.draw();
     }
 

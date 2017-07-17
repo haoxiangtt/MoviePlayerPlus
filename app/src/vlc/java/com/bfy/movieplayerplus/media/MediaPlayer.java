@@ -23,25 +23,35 @@
 package com.bfy.movieplayerplus.media;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.graphics.SurfaceTexture;
 import android.media.AudioAttributes;
 import android.media.MediaFormat;
+import android.media.MediaMetadataRetriever;
 import android.media.TimedText;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PowerManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import com.bfy.movieplayerplus.BuildConfig;
 
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -85,6 +95,8 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
 
     private static final String TAG = "MediaPlayer";
 
+    private static final boolean DEBUG = BuildConfig.DEBUG;
+
     private Media mCurrentMedia = null;
     private final LibVLC mLibVLC;
     private org.videolan.libvlc.MediaPlayer mMediaPlayer;
@@ -103,35 +115,51 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
     private boolean mStayAwake;
     private PowerManager.WakeLock mWakeLock = null;
 
-    public MediaPlayer() {
+    private int mVideoWidth = -1;
+    private int mVideoHeight = -1;
+
+    private Handler mHandler;
+    private Context mContext;
+
+    public MediaPlayer(Context context) {
         mLibVLC = new LibVLC();
         mMediaPlayer = new org.videolan.libvlc.MediaPlayer(mLibVLC);
         mMediaPlayer.setEventListener(this);
+        mHandler = new Handler(Looper.getMainLooper());
+        mContext = context;
     }
 
-    public static MediaPlayer create(Uri uri) {
-        return create ( uri, null);
+    public static MediaPlayer create(Context context, Uri uri) throws IOException {
+        return create (context, uri, null);
     }
 
-    public static MediaPlayer create(Uri uri, SurfaceHolder holder) {
-        return create(uri, holder, null, 0);
+    public static MediaPlayer create(Context context, Uri uri, SurfaceHolder holder) throws IOException {
+        return create(context, uri, holder, null, 0);
     }
 
-    public static MediaPlayer create(Uri uri, SurfaceHolder holder,
-                                     AudioAttributes audioAttributes, int audioSessionId) {
-        MediaPlayer player = new MediaPlayer();
-        //player.setDataSource(context, uri); This throws exception, but not this create()
+    public static MediaPlayer create(Context context, Uri uri, SurfaceHolder holder,
+            AudioAttributes audioAttributes, int audioSessionId) throws IOException {
+        MediaPlayer player = new MediaPlayer(context);
+        player.setDisplay(holder);
+        player.setDataSource(context, uri);
         return player;
     }
 
-    public static MediaPlayer create(int resid) {
-        return create(resid, null, 0);
+    public static MediaPlayer create(Context context, int resid) throws IOException {
+        return create(context, resid, null, 0);
     }
 
-    public static MediaPlayer create(int resid,
-            AudioAttributes audioAttributes, int audioSessionId) {
-        return null;
+    public static MediaPlayer create(Context context, int resid,
+            AudioAttributes audioAttributes, int audioSessionId) throws IOException {
+        //FIXME unimplement
+        MediaPlayer player = new MediaPlayer(context);
+        AssetFileDescriptor afd = context.getResources().openRawResourceFd(resid);
+        if (afd == null) return null;
+        player.setDataSource(context, afd.getFileDescriptor());
+        return player;
     }
+
+
 
     public void setDataSource(Context context, Uri uri)
             throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
@@ -143,43 +171,105 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
             throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
         mCurrentMedia = new Media(mLibVLC, uri);
         mMediaPlayer.setMedia(mCurrentMedia);
+//        loadVideoWidthAndHeight(context, uri);
     }
 
-    public void setDataSource(String path)
+    public void setDataSource(Context context, String path)
             throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
         mCurrentMedia = new Media(mLibVLC, path);
         mMediaPlayer.setMedia(mCurrentMedia);
+//        loadVideoWidthAndHeight(context, Uri.parse(path));
     }
 
-    public void setDataSource(FileDescriptor fd)
+
+
+    public void setDataSource(Context context, FileDescriptor fd)
             throws IOException, IllegalArgumentException, IllegalStateException {
         mCurrentMedia = new Media(mLibVLC, fd);
         mMediaPlayer.setMedia(mCurrentMedia);
+        loadVideoWidthAndHeight(fd);
     }
 
     // FIXME, this is INCORRECT, @offset and @length are ignored
-    public void setDataSource(FileDescriptor fd, long offset, long length)
+    public void setDataSource(Context context, FileDescriptor fd, long offset, long length)
             throws IOException, IllegalArgumentException, IllegalStateException {
-        setDataSource(fd);
+        setDataSource(context, fd);
+    }
+
+    private void loadVideoWidthAndHeight(Context context, Uri uri){
+        MediaMetadataRetriever media = new MediaMetadataRetriever();
+        try {
+            String scheme = uri.getScheme();
+            if (!TextUtils.isEmpty(scheme) &&
+                    (scheme.contains("http") || scheme.contains("https"))) {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("User-Agent", "Mozilla/5.0 (Linux; Android 6.0; vivo Y67A Build/MRA58K) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/38.0.0.0 Mobile Safari/537.36 VivoBrowser/5.1.5");
+                media.setDataSource(uri.toString(), headers);
+            } else {
+                media.setDataSource(context, uri);
+            }
+            mVideoWidth = Integer.valueOf(media.extractMetadata(
+                    MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
+            mVideoHeight = Integer.valueOf(media.extractMetadata(
+                    MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+            int rotation = Integer.valueOf(media.extractMetadata(
+                    MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION));
+            if (rotation == 90 || rotation == 270) {
+                mVideoWidth = mVideoWidth + mVideoHeight;
+                mVideoHeight = mVideoWidth - mVideoHeight;
+                mVideoWidth = mVideoWidth - mVideoHeight;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            media.release();
+        }
+
+
+
+    }
+
+    private void loadVideoWidthAndHeight(FileDescriptor fd) {
+        MediaMetadataRetriever media = new MediaMetadataRetriever();
+        try {
+            media.setDataSource(fd);
+            mVideoWidth = Integer.valueOf(media.extractMetadata(
+                    MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
+            mVideoHeight = Integer.valueOf(media.extractMetadata(
+                    MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            media.release();
+        }
+
     }
 
     public void prepare(){
+        loadVideoWidthAndHeight(mContext, mCurrentMedia.getUri());
         mCurrentMedia.addOption(":video-paused");
         if (mPrepareListener != null) {
             mPrepareListener.onPrepared(this);
         }
-//        start();
     }
 
     public void prepareAsync() {
-        mCurrentMedia.addOption(":video-paused");
-        if (mPrepareListener != null) {
-            mPrepareListener.onPrepared(this);
-        }
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                loadVideoWidthAndHeight(mContext, mCurrentMedia.getUri());
+                mCurrentMedia.addOption(":video-paused");
+                if (mPrepareListener != null) {
+                    mPrepareListener.onPrepared(MediaPlayer.this);
+                }
+            }
+        });
+
 //        start();
     }
 
     public void setDisplay(SurfaceHolder sh) {
+        mMediaPlayer.getVLCVout().detachViews();
         mSurfaceHolder = sh;
         mMediaPlayer.getVLCVout().setVideoSurface(sh.getSurface(), sh);
         mMediaPlayer.getVLCVout().attachViews();
@@ -197,7 +287,16 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
         updateSurfaceScreenOn();
     }
 
+    public void setSurface(SurfaceTexture surfaceTexture, SurfaceHolder holder) {
+        mMediaPlayer.getVLCVout().detachViews();
+        mSurfaceHolder = holder;
+        mMediaPlayer.getVLCVout().setVideoSurface(surfaceTexture);
+        mMediaPlayer.getVLCVout().attachViews();
+        updateSurfaceScreenOn();
+    }
+
     public void setSurfaceView(SurfaceView surfaceView) {
+        mMediaPlayer.getVLCVout().detachViews();
         mSurfaceHolder = surfaceView.getHolder();
         mMediaPlayer.getVLCVout().setVideoView(surfaceView);
         mMediaPlayer.getVLCVout().attachViews();
@@ -284,11 +383,11 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
     }
 
     public int getVideoWidth() {
-        return -1;
+        return mVideoWidth;
     }
 
     public int getVideoHeight() {
-        return -1;
+        return mVideoHeight;
     }
 
     public boolean isPlaying() {
@@ -330,6 +429,8 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
         mInfoListener = null;
         mVideoSizeChangedListener = null;
         mTimeTextListener = null;
+        mHandler = null;
+        mContext = null;
         mMediaPlayer.release();
     }
 
@@ -569,8 +670,10 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
 //            case org.videolan.libvlc.MediaPlayer.Event.MediaChanged:
             case org.videolan.libvlc.MediaPlayer.Event.Stopped:
             case org.videolan.libvlc.MediaPlayer.Event.EndReached:{
-                Log.i(TAG, ">>>>receive Event , action: stoped / end;registerType = " + event.type
-                    + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                if (DEBUG) {
+                    Log.i(TAG, ">>>>receive Event , action: stoped / end;registerType = " + event.type
+                            + "; arg1 = " + event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                }
                 stayAwake(false);
                 if ( mCompleteListener != null) {
                     mCompleteListener.onCompletion(this);
@@ -578,8 +681,10 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
                 break;
             }
             case org.videolan.libvlc.MediaPlayer.Event.EncounteredError:{
-                Log.i(TAG, ">>>>receive Event , action: EncounteredError;registerType = " + event.type
-                    + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                if (DEBUG) {
+                    Log.i(TAG, ">>>>receive Event , action: EncounteredError;registerType = " + event.type
+                            + "; arg1 = " + event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                }
                 stayAwake(false);
                 if (mErrorListener != null) {
                     mErrorListener.onError(this, event.getEsChangedType(), event.getVoutCount());
@@ -587,8 +692,10 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
                 break;
             }
             case org.videolan.libvlc.MediaPlayer.Event.Opening:{
-                Log.i(TAG, ">>>>receive Event , action: Opening;registerType = " + event.type
-                    + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                if (DEBUG) {
+                    Log.i(TAG, ">>>>receive Event , action: Opening;registerType = " + event.type
+                            + "; arg1 = " + event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                }
                 /*if (mPrepareListener != null) {
                     mPrepareListener.onPrepared(this);
                 }*/
@@ -602,36 +709,48 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
             }*/
             case org.videolan.libvlc.MediaPlayer.Event.Playing:
             case org.videolan.libvlc.MediaPlayer.Event.Paused: {
-                Log.i(TAG, ">>>>receive Event , action: Playing / Paused;registerType = " + event.type
-                    + ";arg1 = " +event.getTimeChanged() + ";arg2 = " + event.getPositionChanged());
+                if (DEBUG) {
+                    Log.i(TAG, ">>>>receive Event , action: Playing / Paused;registerType = " + event.type
+                            + ";arg1 = " + event.getTimeChanged() + ";arg2 = " + event.getPositionChanged());
+                }
                 break;
             }
             case org.videolan.libvlc.MediaPlayer.Event.TimeChanged: {
-                Log.i(TAG, ">>>>receive Event , action: TimeChanged;registerType = " + event.type
-                    + ";arg1 = " +event.getTimeChanged() + ";arg2 = " + event.getPositionChanged());
+                if (DEBUG) {
+                    Log.i(TAG, ">>>>receive Event , action: TimeChanged;registerType = " + event.type
+                            + ";arg1 = " + event.getTimeChanged() + ";arg2 = " + event.getPositionChanged());
+                }
                 break;
             }
             case org.videolan.libvlc.MediaPlayer.Event.PositionChanged: {
-                Log.i(TAG, ">>>>receive Event , action: PositionChanged;registerType = " + event.type
-                    + ";arg1 = " +event.getTimeChanged() + ";arg2 = " + event.getPositionChanged());
+                if (DEBUG) {
+                    Log.i(TAG, ">>>>receive Event , action: PositionChanged;registerType = " + event.type
+                            + ";arg1 = " + event.getTimeChanged() + ";arg2 = " + event.getPositionChanged());
+                }
                 break;
             }
             case org.videolan.libvlc.MediaPlayer.Event.Vout: {
-                Log.i(TAG, ">>>>receive Event; action: Vout; registerType = " + event.type
-                        + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                if (DEBUG) {
+                    Log.i(TAG, ">>>>receive Event; action: Vout; registerType = " + event.type
+                            + "; arg1 = " + event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                }
                 break;
             }
             case org.videolan.libvlc.MediaPlayer.Event.ESAdded:
             case org.videolan.libvlc.MediaPlayer.Event.ESDeleted:
             case org.videolan.libvlc.MediaPlayer.Event.SeekableChanged:
             case org.videolan.libvlc.MediaPlayer.Event.PausableChanged: {
-                Log.i(TAG, ">>>>receive Event , action: ESAdded / ESDeleted / SeekableChanged / PausableChanged; registerType = "
-                    + event.type + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                if (DEBUG) {
+                    Log.i(TAG, ">>>>receive Event , action: ESAdded / ESDeleted / SeekableChanged / PausableChanged; registerType = "
+                            + event.type + "; arg1 = " + event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                }
                 break;
             }
             default: {
-                Log.i(TAG, ">>>>receive Event , action: unknown;registerType = " + event.type
-                    + "; arg1 = " +event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                if (DEBUG) {
+                    Log.i(TAG, ">>>>receive Event , action: unknown;registerType = " + event.type
+                            + "; arg1 = " + event.getTimeChanged() + "; arg2 = " + event.getPositionChanged());
+                }
             }
         }
     }

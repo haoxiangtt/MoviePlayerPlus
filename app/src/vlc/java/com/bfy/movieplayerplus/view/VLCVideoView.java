@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.MediaController;
 
@@ -293,7 +294,7 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
 //	        	begin playing video.........................................
             mDuration = -1;
             mIsPrepared = false;
-            mMediaPlayer = new MediaPlayer();
+            mMediaPlayer = new MediaPlayer(mContext);
             mMediaPlayer.setOnPreparedListener(mPreparedListener);
             mMediaPlayer.setOnVideoSizeChangedListener(mSizeChangedListener);
             mMediaPlayer.setOnCompletionListener(mCompletionListener);
@@ -311,29 +312,25 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
         } catch (IOException ex) {
             Log.w(TAG, "Unable to open content: " + mCurrentUri, ex);
             return;
-        } catch (IllegalArgumentException ex) {
-            Log.w(TAG, "Unable to open content: " + mCurrentUri, ex);
-            return;
         }
     }
 
     private void setScale(int width , int height){
 //        modify bu ouyangjinfu, don't fix size
-//        getHolder().setFixedSize(width, height);
-//        ViewGroup.LayoutParams lp = getLayoutParams();
-//        lp.height = height;
-//        lp.width = width;
-//        setLayoutParams(lp);
+        ViewGroup.LayoutParams lp = getLayoutParams();
+        lp.height = height;
+        lp.width = width;
+        setLayoutParams(lp);
     }
 
     private int[] adjustScale(int cw,int ch,int vw,int vh){
         int[] scale = new int[]{cw,ch};
         if(vh <= 0 || vw <= 0) return scale;
         if(ch * vw > cw * vh){
-            //Log.i(TAG, "image too tall, correcting");
+            //Log.i(TAG, "video too wide, correcting");
             scale[1] = cw * vh / vw;
         }else if(ch * vw < cw * vh){
-            //Log.i(TAG, "image too wide, correcting");
+            //Log.i(TAG, "video too tall, correcting");
             scale[0] = ch * vw / vh;
         }
         return scale;

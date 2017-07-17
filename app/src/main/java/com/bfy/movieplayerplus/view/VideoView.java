@@ -314,9 +314,6 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 	        } catch (IOException ex) {
 	            Log.w(TAG, "Unable to open content: " + mCurrentUri, ex);
 	            return;
-	        } catch (IllegalArgumentException ex) {
-	            Log.w(TAG, "Unable to open content: " + mCurrentUri, ex);
-	            return;
 	        }
 	    }
 
@@ -332,10 +329,10 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
     	int[] scale = new int[]{cw,ch};
     	if(vh <= 0 || vw <= 0) return scale;
     	if(ch * vw > cw * vh){
-    		//Log.i(TAG, "image too tall, correcting");
+    		//Log.i(TAG, "video too wide, correcting");
     		scale[1] = cw * vh / vw;
     	}else if(ch * vw < cw * vh){
-    		//Log.i(TAG, "image too wide, correcting");
+    		//Log.i(TAG, "video too tall, correcting");
     		scale[0] = ch * vw / vh;
     	}
     	return scale;

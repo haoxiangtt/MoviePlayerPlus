@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -71,7 +72,8 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
     private static final String TAG = "VideoView";
 
     private Context mContext;
-    private ArrayList<String> mMediaList;
+	private Handler mHandler;
+	private ArrayList<String> mMediaList;
     private Uri         mCurrentUri;
     private int         mDuration;
     private int			mCurrentIndex;
@@ -100,6 +102,7 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 	public GlVideoView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		mContext = context;
+		mHandler = new Handler();
 		initVideoView();
 	}
 
@@ -306,27 +309,24 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 	        } catch (IOException ex) {
 	            Log.w(TAG, "Unable to open content: " + mCurrentUri, ex);
 	            return;
-	        } catch (IllegalArgumentException ex) {
-	            Log.w(TAG, "Unable to open content: " + mCurrentUri, ex);
-	            return;
 	        }
 	    }
 
 	private void setScale(int width , int height){
-			LayoutParams lp = getLayoutParams();
-			lp.height = height;
-			lp.width = width;
-			setLayoutParams(lp);
+		LayoutParams lp = getLayoutParams();
+		lp.height = height;
+		lp.width = width;
+		setLayoutParams(lp);
 	}
 	
 	private int[] adjustScale(int cw,int ch,int vw,int vh){
     	int[] scale = new int[]{cw,ch};
     	if(vh <= 0 || vw <= 0) return scale;
     	if(ch * vw > cw * vh){
-    		//Log.i(TAG, "image too tall, correcting");
+    		//Log.i(TAG, "video too wide, correcting");
     		scale[1] = cw * vh / vw;
     	}else if(ch * vw < cw * vh){
-    		//Log.i(TAG, "image too wide, correcting");
+    		//Log.i(TAG, "video too tall, correcting");
     		scale[0] = ch * vw / vh;
     	}
     	return scale;
@@ -736,7 +736,13 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 		mSurface.setOnFrameAvailableListener(this);
 		mDirectDrawer = new DirectDrawer(mTextureID);
 //		CameraCapture.get().openBackCamera();
-		openVideo();
+		//尽量还是在ui线程中执行，GlThread线程总会出些毛病
+		mHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				openVideo();
+			}
+		});
 	}
 
 
@@ -751,13 +757,13 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 //		if (!CameraCapture.get().isPreviewing()) {
 //			CameraCapture.get().doStartPreview(mSurface);
 //		}
-		//下列代码意义为使绘制区域适应视频尺寸
+		//下列代码意义为使绘制区域适应视频尺寸, 我们这里统一设置成占满整个控件, 尺寸的调整交给setVideoScale方法
 		float screenRatio=width*1f/height;//屏幕宽高比
 		float videoRatio=width*1f/height;//视频宽高比
 		if (videoRatio>screenRatio){
 			Matrix.orthoM(mDirectDrawer.mMVP,0,-1f,1f,-videoRatio/screenRatio,videoRatio/screenRatio,-1f,1f);
 		}else Matrix.orthoM(mDirectDrawer.mMVP,0,-screenRatio/videoRatio,screenRatio/videoRatio,-1f,1f,-1f,1f);
-
+        GLES20.glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
 	}
 
 	@Override
@@ -777,7 +783,6 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 				mUpdateSurface = false;
 			}
 		}
-		GLES20.glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
 		mDirectDrawer.draw();
 	}
 

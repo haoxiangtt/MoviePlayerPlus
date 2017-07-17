@@ -105,7 +105,6 @@ public class CameraCapture {
             try {
                 mCamera.setPreviewDisplay(holder);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             initCamera();
@@ -131,7 +130,6 @@ public class CameraCapture {
                 LogUtils.i(TAG, "setPreviewTexture...");
                 mCamera.setPreviewTexture(surface);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             initCamera();
