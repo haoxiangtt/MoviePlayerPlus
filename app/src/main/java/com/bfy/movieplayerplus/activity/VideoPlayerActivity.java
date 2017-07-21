@@ -5,15 +5,10 @@ import java.util.Date;
 
 import com.bfy.movieplayerplus.R;
 import com.bfy.movieplayerplus.utils.LogUtils;
-import com.bfy.movieplayerplus.utils.ScreenUtils;
-import com.bfy.movieplayerplus.view.GlVideoView;
 import com.bfy.movieplayerplus.view.MediaPlayerController;
 import com.bfy.movieplayerplus.view.OnChangeListener;
-import com.bfy.movieplayerplus.view.VLCVideoView;
-import com.bfy.movieplayerplus.view.VideoView;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -22,8 +17,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
