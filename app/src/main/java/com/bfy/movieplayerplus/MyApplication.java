@@ -11,6 +11,8 @@ import com.bfy.movieplayerplus.http.RequestManager;
 import com.bfy.movieplayerplus.model.base.ModelFactory;
 import com.bfy.movieplayerplus.model.bizImpl.MainModel;
 import com.bfy.movieplayerplus.utils.Constant;
+import com.squareup.leakcanary.LeakCanary;
+import com.squareup.leakcanary.RefWatcher;
 
 /**
  * <pre>
@@ -29,6 +31,7 @@ public class MyApplication extends Application {
 
 
     private static Context mContext;
+    private static RefWatcher mRefWatcher;
 
     @Override
     public void onCreate() {
@@ -47,10 +50,22 @@ public class MyApplication extends Application {
         EventFactory.getEventRegisterFactory().registDispatcher(Constant.EVENT_TYPE_MODEL, new DefaultEventDispatcher());
         EventFactory.getEventRegisterFactory().registDispatcher(Constant.EVENT_TYPE_CONTEXT, new ContextEventDispatcher());
 
+        mRefWatcher = LeakCanary.install(this);
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        mContext = null;
+        mRefWatcher = null;
     }
 
     public static final Context getContext(){
         return mContext;
+    }
+
+    public static final RefWatcher getRefWatcher () {
+        return mRefWatcher;
     }
 
 }

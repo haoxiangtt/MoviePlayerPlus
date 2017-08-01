@@ -1,12 +1,6 @@
 package com.bfy.movieplayerplus.activity;
 
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -30,11 +24,11 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RadioGroup;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -54,6 +48,12 @@ import com.bfy.movieplayerplus.utils.PermissionUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PlayerListActivity extends AppCompatActivity implements OnItemClickListener
 		, View.OnClickListener{

@@ -69,6 +69,8 @@ android {
     }
 
     lintOptions {
+        //build release 版本 时 开启lint 检测
+        checkReleaseBuilds true
         abortOnError false
     }
 
@@ -93,4 +95,8 @@ dependencies {
     compile 'com.android.support:support-v4:25.3.1'
     //    compile 'com.yyl.vlc:vlc-android-sdk:1.1.0'
     vlcCompile 'de.mrmaffen:vlc-android-sdk:3.0.0'
+
+    //内存泄露
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.1'
+    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
 }

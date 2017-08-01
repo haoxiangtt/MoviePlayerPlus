@@ -8,12 +8,12 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
-import java.io.Serializable;
-
 import com.bfy.movieplayerplus.event.base.EventBuilder;
 import com.bfy.movieplayerplus.event.base.EventReceiver;
 import com.bfy.movieplayerplus.event.base.EventRegister;
 import com.bfy.movieplayerplus.utils.LogUtils;
+
+import java.io.Serializable;
 
 /**
  * <pre>
@@ -94,19 +94,24 @@ public final class ContextReceiver implements EventReceiver<Bundle, Object>, Eve
             if (forResult) {
                 if (ev.reference.get() instanceof Activity) {
                     ((Activity) ev.reference.get()).startActivityForResult(intent, requestCode);
+                    ev.responseData = true;
                 } else {
                     LogUtils.e(TAG, ">>>>ev.reference.get() cannot Cast to Activity, maybe it is not a" +
                             " Activity,so cannot invoke startActivityForResult method.");
+                    ev.responseData = false;
                 }
             } else {
                 ((Context)ev.reference.get()).startActivity(intent);
+                ev.responseData = true;
             }
         } else {
             LogUtils.e(TAG, "ev.reference is null, or ev.reference.get() is null, or is not Context, cannot start activity!");
+            ev.responseData = false;
             if (DEBUG) {
                 throw new NullPointerException("ev.reference is null or ev.reference.get() is null,cannot start activity!");
             }
         }
+        ev.performCallback(ev);
 
     }
 
@@ -116,32 +121,40 @@ public final class ContextReceiver implements EventReceiver<Bundle, Object>, Eve
             if (ev.requestData.getBoolean(KEY_LOCAL_BROACAST, false)) {
                 LocalBroadcastManager lbm = LocalBroadcastManager.getInstance((Context)ev.reference.get());
                 lbm.sendBroadcast(intent);
+                ev.responseData = true;
             } else {
                 Context context = ((Context)ev.reference.get());
                 if (!ev.requestData.getBoolean(KEY_STICKY_BROACAST, false)) {
                     context.sendBroadcast(intent);
+                    ev.responseData = true;
                 } else {
                     context.sendStickyBroadcast(intent);
+                    ev.responseData = true;
                 }
             }
         } else {
             LogUtils.e(TAG, "ev.reference is null or ev.reference.get() is null,cannot send broadcast!");
+            ev.responseData = false;
             if (DEBUG) {
                 throw new NullPointerException("ev.reference is null, or ev.reference.get() is null, or is not Context, cannot send broadcast!");
             }
         }
+        ev.performCallback(ev);
     }
 
     protected void startService(EventBuilder.Event<Bundle, Object> ev){
         Intent intent = getIntent(ev);
         if (ev.reference != null && ev.reference.get() != null) {
             ((Context)ev.reference.get()).startService(intent);
+            ev.responseData = true;
         } else {
             LogUtils.e(TAG, "ev.reference is null, or ev.reference.get() is null, or is not Context, cannot start service!");
+            ev.responseData = false;
             if (DEBUG) {
                 throw new NullPointerException("ev.reference is null or ev.reference.get() is null,cannot start service!");
             }
         }
+        ev.performCallback(ev);
     }
 
     protected Intent getIntent(EventBuilder.Event<Bundle, Object> ev) {

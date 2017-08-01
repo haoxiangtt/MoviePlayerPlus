@@ -15,7 +15,7 @@ import com.bfy.movieplayerplus.volley.Request;
  * @desc       : Abstract LoaderControler that implements LoadControler
  * </pre>
  */
-public class AbsLoadControler implements LoadControler {
+public abstract class AbsLoadControler implements LoadControler {
 
     protected Request<?> mRequest;
 

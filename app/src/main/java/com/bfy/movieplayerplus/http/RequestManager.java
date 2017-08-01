@@ -2,13 +2,6 @@ package com.bfy.movieplayerplus.http;
 
 import android.content.Context;
 
-import java.net.HttpURLConnection;
-import java.util.Map;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
-
 import com.bfy.movieplayerplus.http.base.LoadControler;
 import com.bfy.movieplayerplus.http.base.LoadListener;
 import com.bfy.movieplayerplus.http.base.MyHostnameVerifier;
@@ -21,6 +14,12 @@ import com.bfy.movieplayerplus.volley.Request.Method;
 import com.bfy.movieplayerplus.volley.RequestQueue;
 import com.bfy.movieplayerplus.volley.RetryPolicy;
 import com.bfy.movieplayerplus.volley.toolbox.Volley;
+
+import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * <pre>
@@ -147,7 +146,7 @@ public class RequestManager {
 	}
 
 	public LoadControler get(String url, Map<String, String> headers, RequestListener requestListener, boolean shouldCache, String actionId) {
-		return this.request(Method.GET, url, null, headers, requestListener, shouldCache, TIMEOUT_COUNT, RETRY_TIMES, actionId);
+		return request(Method.GET, url, null, headers, requestListener, shouldCache, TIMEOUT_COUNT, RETRY_TIMES, actionId);
 	}
 
 	/**
@@ -161,7 +160,7 @@ public class RequestManager {
 	 * @return
 	 */
 	public LoadControler post(final String url, Object data, Map<String,String> headers,final RequestListener requestListener, String actionId) {
-		return this.post(url, data,headers, requestListener, false, TIMEOUT_COUNT, RETRY_TIMES, actionId);
+		return post(url, data,headers, requestListener, false, TIMEOUT_COUNT, RETRY_TIMES, actionId);
 	}
 
 	/**
@@ -206,10 +205,12 @@ public class RequestManager {
 	 */
 	public LoadControler request(int method, final String url, Object data, final Map<String, String> headers,
 			final RequestListener requestListener, boolean shouldCache, int timeoutCount, int retryTimes, String actionId) {
-		return this.sendRequest(method, url, data, headers, new LoadListener() {
+		return sendRequest(method, url, data, headers, new LoadListener() {
 			@Override
 			public void onStart() {
-				requestListener.onRequest();
+				if (requestListener != null) {
+					requestListener.onRequest();
+				}
 			}
 
 			@Override
@@ -221,12 +222,16 @@ public class RequestManager {
 //				} catch (UnsupportedEncodingException e) {
 //					e.printStackTrace();
 //				}
-				requestListener.onSuccess(data, headers, url, actionId);
+				if (requestListener != null) {
+					requestListener.onSuccess(data, headers, url, actionId);
+				}
 			}
 
 			@Override
 			public void onError(String errorCode, String errorMsg, String url, String actionId) {
-				requestListener.onError(errorCode, errorMsg, url, actionId);
+				if (requestListener != null) {
+					requestListener.onError(errorCode, errorMsg, url, actionId);
+				}
 			}
 		}, shouldCache, timeoutCount, retryTimes, actionId);
 	}
@@ -236,19 +241,19 @@ public class RequestManager {
 	 * @param url
 	 * @param data
 	 * @param headers
-	 * @param requestListener
+	 * @param loadListener
 	 * @param shouldCache
 	 * @param timeoutCount
 	 * @param retryTimes
 	 * @param actionId
 	 * @return
 	 */
-	public LoadControler sendRequest(int method, final String url, Object data, final Map<String, String> headers,
-			final LoadListener requestListener, boolean shouldCache, int timeoutCount, int retryTimes, String actionId) {
-		if (requestListener == null)
+	protected LoadControler sendRequest(int method, final String url, Object data, final Map<String, String> headers,
+			final LoadListener loadListener, boolean shouldCache, int timeoutCount, int retryTimes, String actionId) {
+		if (loadListener == null)
 			throw new NullPointerException();
 
-		final ByteArrayLoadControler loadControler = new ByteArrayLoadControler(requestListener, actionId);
+		final ByteArrayLoadControler loadControler = new ByteArrayLoadControler(loadListener, actionId);
 
 		Request<?> request = null;
 		if (data != null && data instanceof RequestMap) {// force POST and No  Cache
@@ -274,7 +279,7 @@ public class RequestManager {
 
 		if (this.mRequestQueue == null)
 			throw new NullPointerException();
-		requestListener.onStart();
+		loadListener.onStart();
 		this.mRequestQueue.add(request);
 
 		return loadControler;

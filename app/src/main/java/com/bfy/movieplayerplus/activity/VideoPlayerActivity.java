@@ -1,13 +1,5 @@
 package com.bfy.movieplayerplus.activity;
 
-import java.util.ArrayList;
-import java.util.Date;
-
-import com.bfy.movieplayerplus.R;
-import com.bfy.movieplayerplus.utils.LogUtils;
-import com.bfy.movieplayerplus.view.MediaPlayerController;
-import com.bfy.movieplayerplus.view.OnChangeListener;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -28,18 +20,27 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.view.animation.AnimationUtils;
+
+import com.bfy.movieplayerplus.MyApplication;
+import com.bfy.movieplayerplus.R;
+import com.bfy.movieplayerplus.utils.LogUtils;
+import com.bfy.movieplayerplus.view.MediaPlayerController;
+import com.bfy.movieplayerplus.view.OnChangeListener;
+
+import java.util.ArrayList;
+import java.util.Date;
 
 public class VideoPlayerActivity extends AppCompatActivity implements OnClickListener,Callback,
 						OnSeekBarChangeListener,OnChangeListener{
@@ -159,9 +160,9 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	@Override
 	protected void onPause() {
 		if(DEBUG){ Log.i(TAG, "on avtibity pause........"); }
-		if(this.mPlayer.isPlaying()){
-			if(isRecordPosition){ recordPosition(this.mPlayer.getTime()); }
-			this.mPlayer.pause();
+		if(mPlayer.isPlaying()){
+			if(isRecordPosition){ recordPosition(mPlayer.getTime()); }
+			mPlayer.pause();
 		}
 		mHandler.removeMessages(HANDLE_SET_PROGRESS);
 		super.onPause();
@@ -170,14 +171,15 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	@Override
 	protected void onStop() {
 		if(DEBUG){ Log.i(TAG, "on avtibity stop........"); }
-		//this.mPlayer.stop();
+		//mPlayer.stop();
 		super.onStop();
 	}
 
 	@Override
 	protected void onDestroy() {
 		if(DEBUG){ Log.i(TAG, "on avtibity destroy........"); }
-		this.mPlayer.destroy();
+		mPlayer.destroy();
+		MyApplication.getRefWatcher().watch(mPlayer);
 		super.onDestroy();
 	}
 	
@@ -232,12 +234,12 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 		mMessageView = (ViewGroup)findViewById(R.id.rl_message);
 		mController = (ViewGroup)findViewById(R.id.controller);
 
-		mTVTime = (TextView)this.mController.findViewById(R.id.tv_time);
-		mTVLength = (TextView)this.mController.findViewById(R.id.tv_length);
-		mSeekBar = (SeekBar)this.mController.findViewById(R.id.sb_video);
-		mTogglePlayBtn = (ImageButton)this.mController.findViewById(R.id.ib_play);
-		mBackBtn = (ImageButton)this.mController.findViewById(R.id.ib_backward);
-		mForwardBtn = (ImageButton)this.mController.findViewById(R.id.ib_forward);
+		mTVTime = (TextView)mController.findViewById(R.id.tv_time);
+		mTVLength = (TextView)mController.findViewById(R.id.tv_length);
+		mSeekBar = (SeekBar)mController.findViewById(R.id.sb_video);
+		mTogglePlayBtn = (ImageButton)mController.findViewById(R.id.ib_play);
+		mBackBtn = (ImageButton)mController.findViewById(R.id.ib_backward);
+		mForwardBtn = (ImageButton)mController.findViewById(R.id.ib_forward);
 
 		//添加响应事件
 		mTogglePlayBtn.setOnClickListener(this);
@@ -274,21 +276,21 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 		}
 		if(uri != null && !TextUtils.isEmpty(url)){
 			if(DEBUG){ Log.i(TAG, ">>>>>>>>>uri="+uri.toString()+"<<<<<<<<<<<"); }
-			this.isPlayOnce = true;
-			this.mPlayer.initPlayer(uri.toString().trim());
-			//this.mPlayer.start();
-			this.mTVTitle.setText(uri.getPath());
+			isPlayOnce = true;
+			mPlayer.initPlayer(uri.toString().trim());
+			//mPlayer.start();
+			mTVTitle.setText(uri.getPath());
 			mHandler.sendEmptyMessage(HANDLE_SHOW_CONTROLLER);
 		}else{
-			this.isPlayOnce = false;
+			isPlayOnce = false;
 			Bundle b = intent.getBundleExtra("data");
 			if(b == null){ showMessage(getResources().getString(R.string.no_video));finish(); }
 			ArrayList<String> list = (ArrayList<String>)b.getSerializable("medialist");
 			if(list == null){ showMessage(getResources().getString(R.string.no_video));finish(); }
 			int index = b.getInt("index", 0);
-			this.mPlayer.initPlayer(list, index);
-			//this.mPlayer.start();
-			this.mTVTitle.setText(list.get(index));
+			mPlayer.initPlayer(list, index);
+			//mPlayer.start();
+			mTVTitle.setText(list.get(index));
 			mHandler.sendEmptyMessage(HANDLE_SHOW_CONTROLLER);
 		}
 		
@@ -313,48 +315,48 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	}
 	
 	private void setProgress(){
-		if(this.isSeekbarStartTrackingTouch || !mPlayer.isPlaying()){ return; }
-		this.mSeekBar.setMax((int)this.mPlayer.getDuration());
-		this.mSeekBar.setProgress((int)this.mPlayer.getTime());
-		this.mTVLength.setText(parseTime(this.mPlayer.getDuration()));
-		this.mTVTime.setText(parseTime(this.mPlayer.getTime()));
+		if(isSeekbarStartTrackingTouch || !mPlayer.isPlaying()){ return; }
+		mSeekBar.setMax((int)mPlayer.getDuration());
+		mSeekBar.setProgress((int)mPlayer.getTime());
+		mTVLength.setText(parseTime(mPlayer.getDuration()));
+		mTVTime.setText(parseTime(mPlayer.getTime()));
 		
 	}
 	
 	
 
 	private void showController(){
-		if(this.mController.getVisibility() == View.VISIBLE){ return; }
-		this.mController.setVisibility(View.VISIBLE);
-		this.mTitleBar.setVisibility(View.VISIBLE);
-		this.mController.startAnimation(
+		if(mController.getVisibility() == View.VISIBLE){ return; }
+		mController.setVisibility(View.VISIBLE);
+		mTitleBar.setVisibility(View.VISIBLE);
+		mController.startAnimation(
 				AnimationUtils.loadAnimation(this, R.anim.operate_controler_open));
 	}
 
 	private void hideController(){
-		if(this.mController.getVisibility() == View.GONE){ return; }
-		this.mController.startAnimation(
+		if(mController.getVisibility() == View.GONE){ return; }
+		mController.startAnimation(
 				AnimationUtils.loadAnimation(this, R.anim.operate_controler_close));
-		this.mTitleBar.setVisibility(View.GONE);
-		this.mController.setVisibility(View.GONE);
+		mTitleBar.setVisibility(View.GONE);
+		mController.setVisibility(View.GONE);
 	}
 
 	private void showBuffering(){
-		this.mBufferLoadingView.setVisibility(View.VISIBLE);
+		mBufferLoadingView.setVisibility(View.VISIBLE);
 	}
 
 	private void hideBuffering(){
-		this.mBufferLoadingView.setVisibility(View.GONE);
+		mBufferLoadingView.setVisibility(View.GONE);
 	}
 
 	private void togglePlay(){
-		if(this.mPlayer.isPlaying()){
-			this.mPlayer.pause();
-			recordPosition(this.mPlayer.getTime());
-			this.mTogglePlayBtn.setImageLevel(1);
+		if(mPlayer.isPlaying()){
+			mPlayer.pause();
+			recordPosition(mPlayer.getTime());
+			mTogglePlayBtn.setImageLevel(1);
 		}else{
-			this.mPlayer.play();
-			this.mTogglePlayBtn.setImageLevel(0);
+			mPlayer.play();
+			mTogglePlayBtn.setImageLevel(0);
 		}
 	}
 	
@@ -362,14 +364,14 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 		//Log.i(TAG, "record Position..........:"+position);
         SharedPreferences  pre = getSharedPreferences(RECORD_POSITION, Context.MODE_PRIVATE);
         Editor editor = pre.edit();
-        String path = this.mPlayer.getCurrentPlayUrl();
+        String path = mPlayer.getCurrentPlayUrl();
         editor.putLong(path, position);
         editor.commit();
 	}
     
     private long readPosition(){
 	       SharedPreferences pre = getSharedPreferences(RECORD_POSITION, Context.MODE_PRIVATE);
-	       return pre.getLong(this.mPlayer.getCurrentPlayUrl(), 0);
+	       return pre.getLong(mPlayer.getCurrentPlayUrl(), 0);
     }
     
     private void changeRecorder(int recorder){
@@ -451,7 +453,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 		}
 		
 		return super.onTouchEvent(event);
-		//return this.mGestureDetector.onTouchEvent(event);
+		//return mGestureDetector.onTouchEvent(event);
 	}
 
 	/*******************************************************/
@@ -495,15 +497,15 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 				break;
 			}
 			case R.id.ib_backward:{
-				if(isRecordPosition){ recordPosition(this.mPlayer.getTime()); }
-				if(!this.mPlayer.playBack()){
+				if(isRecordPosition){ recordPosition(mPlayer.getTime()); }
+				if(!mPlayer.playBack()){
 					showMessage(getResources().getString(R.string.msg_end));
 				}
 				break;
 			}
 			case R.id.ib_forward:{
-				if(isRecordPosition){ recordPosition(this.mPlayer.getTime()); }
-				if(!this.mPlayer.playNext()){
+				if(isRecordPosition){ recordPosition(mPlayer.getTime()); }
+				if(!mPlayer.playNext()){
 					showMessage(getResources().getString(R.string.msg_end));
 				}
 				break;
@@ -521,14 +523,14 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress,
 			boolean fromUser) {
-		if(fromUser && this.mPlayer.canSeekble()){
-			this.mPlayer.setTime(progress);
+		if(fromUser && mPlayer.canSeekble()){
+			mPlayer.setTime(progress);
 		}
 	}
 
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar) {
-		this.isSeekbarStartTrackingTouch = true;
+		isSeekbarStartTrackingTouch = true;
 		mHandler.removeMessages(HANDLE_HIDE_CONTROLLER);
 		
 	}
@@ -536,7 +538,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar) {
-		this.isSeekbarStartTrackingTouch = false;
+		isSeekbarStartTrackingTouch = false;
 		mHandler.sendEmptyMessage(HANDLE_SHOW_CONTROLLER);
 	}
 	/****************************************************/
@@ -554,13 +556,13 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 		}else{
 			showBuffering();
 		}
-		this.mTVBuffer.setText(getResources().getString(R.string.msg_buffering, (int)buffer+"%"));
+		mTVBuffer.setText(getResources().getString(R.string.msg_buffering, (int)buffer+"%"));
 	}
 	
 	@Override
 	public void onPositionChanged(long progress) {
-		/*if(!this.isSeekbarStartTrackingTouch){
-			this.mHandler.sendEmptyMessage(HANDLE_SET_PROGRESS);
+		/*if(!isSeekbarStartTrackingTouch){
+			mHandler.sendEmptyMessage(HANDLE_SET_PROGRESS);
 		}*/
 	}
 	
@@ -582,10 +584,10 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	@Override
 	public void onEnd() {
 		if(isRecordPosition){ recordPosition(0); }
-		if(this.isPlayOnce){
+		if(isPlayOnce){
 			finish();
 		}else{
-			if(!this.mPlayer.playNext()){
+			if(!mPlayer.playNext()){
 				finish();
 			}
 		}
