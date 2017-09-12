@@ -18,6 +18,9 @@ package com.bfy.movieplayerplus.volley.toolbox;
 
 import android.os.SystemClock;
 
+import com.bfy.movieplayerplus.volley.Cache;
+import com.bfy.movieplayerplus.volley.VolleyLog;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.EOFException;
@@ -33,9 +36,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import com.bfy.movieplayerplus.volley.Cache;
-import com.bfy.movieplayerplus.volley.VolleyLog;
 
 /**
  * Cache implementation that caches files directly onto the hard disk in the specified
@@ -119,6 +119,10 @@ public class DiskBasedCache implements Cache {
             byte[] data = streamToBytes(cis, (int) (file.length() - cis.bytesRead));
             return entry.toCacheEntry(data);
         } catch (IOException e) {
+            VolleyLog.d("%s: %s", file.getAbsolutePath(), e.toString());
+            remove(key);
+            return null;
+        }  catch (NegativeArraySizeException e) {
             VolleyLog.d("%s: %s", file.getAbsolutePath(), e.toString());
             remove(key);
             return null;

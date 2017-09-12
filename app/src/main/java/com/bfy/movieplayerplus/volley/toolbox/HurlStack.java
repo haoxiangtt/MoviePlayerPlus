@@ -16,6 +16,10 @@
 
 package com.bfy.movieplayerplus.volley.toolbox;
 
+import com.bfy.movieplayerplus.volley.AuthFailureError;
+import com.bfy.movieplayerplus.volley.Request;
+import com.bfy.movieplayerplus.volley.Request.Method;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -39,10 +43,6 @@ import java.util.Map.Entry;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
-
-import com.bfy.movieplayerplus.volley.AuthFailureError;
-import com.bfy.movieplayerplus.volley.Request;
-import com.bfy.movieplayerplus.volley.Request.Method;
 
 /**
  * An {@link HttpStack} based on {@link HttpURLConnection}.
@@ -166,14 +166,7 @@ public class HurlStack implements HttpStack {
      * Create an {@link HttpURLConnection} for the specified {@code url}.
      */
     protected HttpURLConnection createConnection(URL url) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-        // Workaround for the M release HttpURLConnection not observing the
-        // HttpURLConnection.setFollowRedirects() property.
-        // https://code.google.com/p/android/issues/detail?id=194495
-        connection.setInstanceFollowRedirects(HttpURLConnection.getFollowRedirects());
-
-        return connection;
+        return (HttpURLConnection) url.openConnection();
     }
 
     /**

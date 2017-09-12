@@ -28,7 +28,6 @@ import com.bfy.movieplayerplus.utils.GlUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -722,7 +721,9 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
         float videoRatio=width*1f/height;//视频宽高比
         if (videoRatio>screenRatio){
             Matrix.orthoM(mDirectDrawer.mMVP,0,-1f,1f,-videoRatio/screenRatio,videoRatio/screenRatio,-1f,1f);
-        }else Matrix.orthoM(mDirectDrawer.mMVP,0,-screenRatio/videoRatio,screenRatio/videoRatio,-1f,1f,-1f,1f);
+        }else {
+            Matrix.orthoM(mDirectDrawer.mMVP, 0, -screenRatio / videoRatio, screenRatio / videoRatio, -1f, 1f, -1f, 1f);
+        }
         GLES20.glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
         if (mMediaPlayer != null) {
             mMediaPlayer.setSurface(new Surface(mSurface), getHolder());

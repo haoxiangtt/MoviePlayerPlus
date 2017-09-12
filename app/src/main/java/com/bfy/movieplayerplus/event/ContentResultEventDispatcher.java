@@ -2,7 +2,6 @@ package com.bfy.movieplayerplus.event;
 
 import com.bfy.movieplayerplus.event.base.BaseEventDispatcher;
 import com.bfy.movieplayerplus.event.base.EventBuilder;
-import com.bfy.movieplayerplus.event.base.EventDispatcher;
 import com.bfy.movieplayerplus.event.base.Subscription;
 
 /**

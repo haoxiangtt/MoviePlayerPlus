@@ -279,7 +279,7 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 
 	private void openVideo() {
 	
-	        if (mCurrentUri == null) {
+	        if (mCurrentUri == null || mSurfaceHolder == null) {
 	            return;
 	        }
 	        if(DEBUG) Log.i(TAG, "Uri Scheme : " + mCurrentUri.getScheme()
