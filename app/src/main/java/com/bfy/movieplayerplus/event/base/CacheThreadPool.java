@@ -2,8 +2,7 @@ package com.bfy.movieplayerplus.event.base;
 
 
 import android.text.TextUtils;
-
-import com.bfy.movieplayerplus.utils.LogUtils;
+import android.util.Log;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -65,25 +64,25 @@ public class CacheThreadPool extends Platform{
 
     @Override
     public boolean cancel(String sessionId) {
-        LogUtils.e(TAG,"Begin cancel the thread pool by sessionId : " + sessionId);
+        Log.e(TAG,"Begin cancel the thread pool by sessionId : " + sessionId);
         if (TextUtils.isEmpty(sessionId)) {
-            LogUtils.e(TAG,"SessionId is empty!");
+            Log.e(TAG,"SessionId is empty!");
             return false;
         }
         List<Reference<Future<?>>> list = mThreadMap.get(sessionId);
         int flag = 0;
         if (list != null) {
-            LogUtils.e(TAG,"Find " + list.size() + " threads in the list.");
+            Log.e(TAG,"Find " + list.size() + " threads in the list.");
             int i = 0;
             for (Reference<Future<?>> ref : list) {
                 if (ref.get() != null) {
                     Future<?> task = ref.get();
                     if (!task.isDone()) {
                         if (task.cancel(true)) {
-                            LogUtils.e(TAG, "Cancel a thread successfully!index = " + i);
+                            Log.e(TAG, "Cancel a thread successfully!index = " + i);
                         } else {
                             flag++;
-                            LogUtils.e(TAG, "Cancel a thread failure!index = " + i);
+                            Log.e(TAG, "Cancel a thread failure!index = " + i);
                         }
                     }
                 }
@@ -100,7 +99,7 @@ public class CacheThreadPool extends Platform{
                 return false;
             }
         } finally {
-            LogUtils.e(TAG,"End cancel thread pool!!!!");
+            Log.e(TAG,"End cancel thread pool!!!!");
         }
 
     }

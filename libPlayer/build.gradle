@@ -1,0 +1,116 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+        ndk {
+            //选择要添加的对应cpu类型的.so库。
+            abiFilters 'x86_64', 'armeabi-v7a', 'arm64-v8a'
+            // 还可以添加 'armeabi', 'x86', 'mips', 'mips64'
+        }
+
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            debuggable false
+            minifyEnabled true
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    productFlavors{
+        defaultPublishConfig "vlc"
+        publishNonDefault true
+        vlc{
+            versionCode 3
+            versionName '1.2.0'
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+            java.srcDirs = ['src/main/java']
+            res.srcDirs = ['src/main/res']
+            resources.srcDirs = ['src/main/java']
+            aidl.srcDirs = ['src/main/java']
+            renderscript.srcDirs = ['src/main/java']
+            assets.srcDirs = ['src/main/assets']
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+
+        vlc {
+            manifest.srcFile 'src/vlc/AndroidManifest.xml'
+            java.srcDirs = ['src/vlc/java', 'src/opengl/java']
+            res.srcDirs = ['src/vlc/res', 'src/opengl/res']
+            resources.srcDirs = ['src/vlc/java']
+            aidl.srcDirs = ['src/vlc/java']
+            renderscript.srcDirs = ['src/vlc/java']
+            assets.srcDirs = ['src/vlc/assets']
+            jniLibs.srcDirs = ['src/vlc/jniLibs']
+        }
+
+    }
+
+    lintOptions {
+        //build release 版本 时 开启lint 检测
+        checkReleaseBuilds true
+        abortOnError false
+    }
+
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    //    compile 'com.yyl.vlc:vlc-android-sdk:1.1.0'
+
+    vlcCompile 'de.mrmaffen:vlc-android-sdk:3.0.0'
+
+    //内存泄露
+//    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.1'
+//    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+}
+
+//打包jar任务
+def BASENAME = "media_player_sdk";
+def sdkDestinationPath = "build/outputs/jar/";
+android.libraryVariants.all { variant ->
+//    def flavorName = ""
+//    variant.productFlavors.name.each(){ itemName ->
+//        flavorName += itemName
+//    }
+    def finalName = "${BASENAME}-${variant.mergedFlavor.versionName}-${variant.buildType.name}"
+    def deleteBuild = tasks.create(name : "delete${variant.name.capitalize()}Jar",
+            type : Delete) {
+        delete "${sdkDestinationPath}${finalName}.jar"
+    }
+    tasks.create(name : "makeJar${variant.name.capitalize()}",
+            dependsOn : [deleteBuild, variant.assemble],
+            type : Jar) {
+//        def zfile = file("build/intermediates/bundles/${variant.name}/classes.jar")
+        from "build/intermediates/classes/${variant.productFlavors.name[0]}/${variant.buildType.name}"
+        baseName finalName
+        destinationDir file(sdkDestinationPath)
+        exclude "android/support/**/*.class"
+        exclude "**/R.class"
+        exclude "**/R\$*.class"
+        include "cn/richinfo/player/**/*.class"
+    }
+}

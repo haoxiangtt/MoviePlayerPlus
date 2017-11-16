@@ -1,5 +1,12 @@
 package com.bfy.movieplayerplus.model.base;
 
+import com.bfy.movieplayerplus.event.EventJsonObject;
+import com.bfy.movieplayerplus.http.RequestManager;
+import com.bfy.movieplayerplus.http.base.LoadControler;
+import com.bfy.movieplayerplus.parameter.RequestParameter;
+import com.bfy.movieplayerplus.utils.Constant;
+import com.bfy.movieplayerplus.utils.LogUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -7,12 +14,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.bfy.movieplayerplus.event.EventJsonObject;
-import com.bfy.movieplayerplus.http.RequestManager;
-import com.bfy.movieplayerplus.http.base.LoadControler;
-import com.bfy.movieplayerplus.parameter.RequestParameter;
-import com.bfy.movieplayerplus.utils.LogUtils;
-import com.bfy.movieplayerplus.utils.Constant;
 
 
 /**

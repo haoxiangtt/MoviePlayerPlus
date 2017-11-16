@@ -18,13 +18,7 @@ android {
 
     }
 
-    productFlavors{
-        vlc{
-            applicationId "com.bfy.movieplayerplus.vlc"
-            versionCode 3
-            versionName '1.2.0'
-        }
-    }
+
 
     buildTypes {
 
@@ -43,30 +37,7 @@ android {
         }
     }
 
-    sourceSets {
-        main {
-            manifest.srcFile 'src/main/AndroidManifest.xml'
-            java.srcDirs = ['src/main/java']
-            res.srcDirs = ['src/main/res']
-            resources.srcDirs = ['src/main/java']
-            aidl.srcDirs = ['src/main/java']
-            renderscript.srcDirs = ['src/main/java']
-            assets.srcDirs = ['src/main/assets']
-            jniLibs.srcDirs = ['src/main/jniLibs']
-        }
 
-        vlc {
-            manifest.srcFile 'src/vlc/AndroidManifest.xml'
-            java.srcDirs = ['src/vlc/java', 'src/opengl/java']
-            res.srcDirs = ['src/vlc/res', 'src/opengl/res']
-            resources.srcDirs = ['src/vlc/java']
-            aidl.srcDirs = ['src/vlc/java']
-            renderscript.srcDirs = ['src/vlc/java']
-            assets.srcDirs = ['src/vlc/assets']
-            jniLibs.srcDirs = ['src/vlc/jniLibs']
-        }
-
-    }
 
     lintOptions {
         //build release 版本 时 开启lint 检测
@@ -86,17 +57,13 @@ android.applicationVariants.all { variant ->
     }
 }
 
-tasks.whenTaskAdded { theTask ->
-
-}
-
 dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support:support-v4:25.3.1'
-    //    compile 'com.yyl.vlc:vlc-android-sdk:1.1.0'
-    vlcCompile 'de.mrmaffen:vlc-android-sdk:3.0.0'
-
     //内存泄露
-    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.1'
-    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+//    debugCompile 'com.square up.leakcanary:leakcanary-android:1.5.1'
+//    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+//    compile 'de.mrmaffen:vlc-android-sdk:3.0.0'
+//    compile files('libs/media_player_sdk-1.2.0-debug.jar')
+    compile project(path: ':libPlayer', configuration: 'vlcDebug');
 }

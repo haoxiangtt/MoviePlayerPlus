@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.bfy.movieplayerplus.BuildConfig;
 
+
 public class LogUtils {
     public static boolean isDebug = BuildConfig.DEBUG;
     public static final LogUtils instance = new LogUtils();

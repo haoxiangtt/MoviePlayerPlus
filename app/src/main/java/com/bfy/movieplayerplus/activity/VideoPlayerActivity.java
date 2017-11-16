@@ -33,17 +33,18 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bfy.movieplayerplus.MyApplication;
 import com.bfy.movieplayerplus.R;
 import com.bfy.movieplayerplus.utils.LogUtils;
-import com.bfy.movieplayerplus.view.MediaPlayerController;
-import com.bfy.movieplayerplus.view.OnChangeListener;
 
 import java.util.ArrayList;
 import java.util.Date;
 
+import cn.richinfo.player.view.MediaPlayerController;
+import cn.richinfo.player.view.OnChangeListener;
+
+
 public class VideoPlayerActivity extends AppCompatActivity implements OnClickListener,Callback,
-						OnSeekBarChangeListener,OnChangeListener{
+						OnSeekBarChangeListener, OnChangeListener {
 
 	protected static final String TAG = "VideoPlayerActivity";
 	protected static final boolean DEBUG = LogUtils.isDebug;
@@ -179,7 +180,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 	protected void onDestroy() {
 		if(DEBUG){ Log.i(TAG, "on avtibity destroy........"); }
 		mPlayer.destroy();
-		MyApplication.getRefWatcher().watch(mPlayer);
 		super.onDestroy();
 	}
 	

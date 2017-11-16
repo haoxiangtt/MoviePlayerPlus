@@ -1,8 +1,7 @@
 package com.bfy.movieplayerplus.event.base;
 
 import android.text.TextUtils;
-
-import com.bfy.movieplayerplus.utils.LogUtils;
+import android.util.Log;
 
 import java.util.UUID;
 
@@ -98,12 +97,12 @@ public class BaseEventDispatcher implements EventDispatcher {
                         .getRegister(mEvent.registerType);
             }
             if (register == null) {
-                LogUtils.e(Scheduler.TAG, "event scheduler error : register is null, register registerType = " + mEvent.registerType + ".");
+                Log.e(Scheduler.TAG, "event scheduler error : register is null, register registerType = " + mEvent.registerType + ".");
                 return;
             }
             final EventReceiver receiver = register.getReceiver(mEvent.receiverKey);
             if ( receiver == null) {
-                LogUtils.e(Scheduler.TAG, "event scheduler error : receiver is null, receiver receiverKey = '" + mEvent.receiverKey + "'.");
+                Log.e(Scheduler.TAG, "event scheduler error : receiver is null, receiver receiverKey = '" + mEvent.receiverKey + "'.");
                 return;
             }
             if (mEvent.getInterceptor() != null

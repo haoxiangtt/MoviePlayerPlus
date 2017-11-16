@@ -3,15 +3,15 @@ package com.bfy.movieplayerplus.model.base;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.bfy.movieplayerplus.event.base.EventReceiver;
+import com.bfy.movieplayerplus.event.base.EventRegister;
+import com.bfy.movieplayerplus.utils.LogUtils;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.bfy.movieplayerplus.event.base.EventReceiver;
-import com.bfy.movieplayerplus.event.base.EventRegister;
-import com.bfy.movieplayerplus.utils.LogUtils;
 
 
 /**

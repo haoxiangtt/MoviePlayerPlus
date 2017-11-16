@@ -4,7 +4,7 @@
     android:background="#FF000000"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <com.bfy.movieplayerplus.view.GlVideoView
+    <cn.richinfo.player.view.GlVideoView
         android:id="@+id/def_video"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

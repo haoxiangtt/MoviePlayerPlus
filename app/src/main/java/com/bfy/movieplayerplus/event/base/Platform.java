@@ -15,7 +15,6 @@
  */
 package com.bfy.movieplayerplus.event.base;
 
-import com.bfy.movieplayerplus.utils.LogUtils;
 import java.util.concurrent.Executor;
 
 /**

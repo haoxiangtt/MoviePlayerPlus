@@ -2,14 +2,14 @@ package com.bfy.movieplayerplus.model.base;
 
 import android.content.Context;
 
+import com.bfy.movieplayerplus.event.EventJsonObject;
+import com.bfy.movieplayerplus.event.base.EventBuilder.Event;
+import com.bfy.movieplayerplus.utils.NetworkState;
+
 import org.json.JSONException;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-
-import com.bfy.movieplayerplus.event.EventJsonObject;
-import com.bfy.movieplayerplus.event.base.EventBuilder.Event;
-import com.bfy.movieplayerplus.utils.NetworkState;
 
 
 /**

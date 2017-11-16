@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class PlayerListActivity extends AppCompatActivity implements OnItemClickListener
 		, View.OnClickListener{
 	private static final int MENU_ACTION_ABOUT = 0;

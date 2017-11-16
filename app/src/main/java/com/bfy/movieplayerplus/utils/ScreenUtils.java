@@ -6,7 +6,6 @@ import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
