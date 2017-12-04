@@ -6,3 +6,16 @@
 	使用系统解码框架的：
 		1、VideoView：使用surfaceView渲染视频；
 		2、GlVideoView：使用GlSurfaceView渲染视频。
+	简单集成方式：
+	在layout布局文件中直接声明控件：
+        <cn.richinfo.player.view.GlVideoView
+                android:id="@+id/def_video"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"/>
+    在代码中找到控件：
+    MediaPlayerController player = (MediaPlayerController)findViewById(R.id.def_video);
+    player.initPlayer(url);//初始化播放器
+    player.start();//开始播放
+
+作者：ouyangjinfu

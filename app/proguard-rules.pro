@@ -146,4 +146,4 @@
 #-keep com.bfy.movieplayerplus.broadcastreceiver.** {*;}
 
 -keep class org.videolan.libvlc.**{*;}
--keep class org.videolan.libvlc.util.**{*;}
+#-keep class org.videolan.libvlc.util.**{*;}

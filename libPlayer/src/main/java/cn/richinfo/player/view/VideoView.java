@@ -1,21 +1,5 @@
 package cn.richinfo.player.view;
 
-/*
- * Copyright (C) 2006 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -41,11 +25,20 @@ import java.util.ArrayList;
 import cn.richinfo.player.BuildConfig;
 
 /**
- * Displays a video file.  The VideoView class
- * can load images from various sources (such as resources or content
- * providers), takes care of computing its measurement from the video so that
- * it can be used in any layout manager, and provides various display options
- * such as scaling and tinting.
+ * <pre>
+ * @copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
+ * @company    : XXXXXXXXXXXXXXXXX
+ * @author     : OuyangJinfu
+ * @e-mail     : jinfu123.-@163.com
+ * @createDate : 2017/6/9 0009
+ * @modifyDate : 2017/6/9 0009
+ * @version    : 1.0
+ * @desc       : Displays a video file.  The VideoView class
+ * 				can load images from various sources (such as resources or content
+ * 				providers), takes care of computing its measurement from the video so that
+ * 				it can be used in any layout manager, and provides various display options
+ * 				such as scaling and tinting.
+ * </pre>
  */
 public class VideoView extends SurfaceView implements MediaPlayerController{
 
