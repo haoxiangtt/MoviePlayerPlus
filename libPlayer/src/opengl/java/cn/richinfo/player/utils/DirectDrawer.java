@@ -104,7 +104,7 @@ public class DirectDrawer {
         GlUtil.checkLocation(uSTMMatrixHandle, "uSTMatrix");
 
         mTexSamplerHandle =  GLES20.glGetUniformLocation(mProgram, "s_texture");
-        GlUtil.checkLocation(mMVPMatrixHandle, "s_texture");
+        GlUtil.checkLocation(mTexSamplerHandle, "s_texture");
 
         // initialize vertex byte buffer for shape coordinates
         updateVertices();

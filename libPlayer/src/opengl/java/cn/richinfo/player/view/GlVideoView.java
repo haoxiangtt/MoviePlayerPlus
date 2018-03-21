@@ -746,7 +746,9 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 		float videoRatio=width*1f/height;//视频宽高比
 		if (videoRatio>screenRatio){
 			Matrix.orthoM(mDirectDrawer.mMVP,0,-1f,1f,-videoRatio/screenRatio,videoRatio/screenRatio,-1f,1f);
-		}else Matrix.orthoM(mDirectDrawer.mMVP,0,-screenRatio/videoRatio,screenRatio/videoRatio,-1f,1f,-1f,1f);
+		}else {
+			Matrix.orthoM(mDirectDrawer.mMVP,0,-screenRatio/videoRatio,screenRatio/videoRatio,-1f,1f,-1f,1f);
+		}
         GLES20.glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
 	}
 

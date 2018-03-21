@@ -236,6 +236,13 @@ public class MediaPlayer implements org.videolan.libvlc.MediaPlayer.EventListene
                     MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
             mVideoHeight = Integer.valueOf(media.extractMetadata(
                     MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+            int rotation = Integer.valueOf(media.extractMetadata(
+                    MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION));
+            if (rotation == 90 || rotation == 270) {
+                mVideoWidth = mVideoWidth + mVideoHeight;
+                mVideoHeight = mVideoWidth - mVideoHeight;
+                mVideoWidth = mVideoWidth - mVideoHeight;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
