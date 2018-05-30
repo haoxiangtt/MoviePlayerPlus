@@ -35,14 +35,14 @@ import cn.richinfo.player.utils.GlUtil;
 
 /**
  * <pre>
- * @copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
- * @company    : XXXXXXXXXXXXXXXXX
+ * copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
+ * company    : XXXXXXXXXXXXXXXXX
  * @author     : OuyangJinfu
- * @e-mail     : jinfu123.-@163.com
- * @createDate : 2017/6/9 0009
- * @modifyDate : 2017/6/9 0009
+ * e-mail     : jinfu123.-@163.com
+ * createDate : 2017/6/9 0009
+ * modifyDate : 2017/6/9 0009
  * @version    : 1.0
- * @desc       : 使用OpenGL渲染视频的vlc播放控件
+ * desc       : 使用OpenGL渲染视频的vlc播放控件
  * </pre>
  */
 public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerController
@@ -131,6 +131,10 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
 
                 if (mMediaController != null) {
                     mMediaController.show();
+                }
+
+                if (mOnChangeListener != null) {
+                    mOnChangeListener.onPrepared();
                 }
 //	                }
             } else {
@@ -740,12 +744,17 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
         // 清除屏幕和深度缓存
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         // 更新纹理
-        synchronized (this) {
+        /*synchronized (this) {
             if (mUpdateSurface) {
                 mSurface.updateTexImage();
                 mSurface.getTransformMatrix(mDirectDrawer.mSTMatrix);
                 mUpdateSurface = false;
             }
+        }*/
+        if (mUpdateSurface) {
+            mSurface.updateTexImage();
+            mSurface.getTransformMatrix(mDirectDrawer.mSTMatrix);
+            mUpdateSurface = false;
         }
         mDirectDrawer.draw();
     }

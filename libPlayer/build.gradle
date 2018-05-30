@@ -28,7 +28,7 @@ android {
 
         release {
             debuggable false
-            minifyEnabled true
+            minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -77,11 +77,11 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:25.3.1'
+//    compile fileTree(dir: 'libs', include: ['*.jar'])
+    provided 'com.android.support:appcompat-v7:25.3.1'
     //    compile 'com.yyl.vlc:vlc-android-sdk:1.1.0'
 
-    vlcCompile 'de.mrmaffen:vlc-android-sdk:3.0.0'
+    vlcProvided 'de.mrmaffen:vlc-android-sdk:3.0.0'
 
     //内存泄露
 //    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.1'
@@ -114,3 +114,5 @@ android.libraryVariants.all { variant ->
         include "cn/richinfo/player/**/*.class"
     }
 }
+
+apply from: 'upload_bintray.gradle'

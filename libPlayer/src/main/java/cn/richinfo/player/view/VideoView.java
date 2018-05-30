@@ -26,14 +26,14 @@ import cn.richinfo.player.BuildConfig;
 
 /**
  * <pre>
- * @copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
- * @company    : XXXXXXXXXXXXXXXXX
+ * copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
+ * company    : XXXXXXXXXXXXXXXXX
  * @author     : OuyangJinfu
- * @e-mail     : jinfu123.-@163.com
- * @createDate : 2017/6/9 0009
- * @modifyDate : 2017/6/9 0009
+ * e-mail     : jinfu123.-@163.com
+ * createDate : 2017/6/9 0009
+ * modifyDate : 2017/6/9 0009
  * @version    : 1.0
- * @desc       : Displays a video file.  The VideoView class
+ * desc       : Displays a video file.  The VideoView class
  * 				can load images from various sources (such as resources or content
  * 				providers), takes care of computing its measurement from the video so that
  * 				it can be used in any layout manager, and provides various display options
@@ -135,6 +135,10 @@ public class VideoView extends SurfaceView implements MediaPlayerController{
 
 					if (mMediaController != null) {
 						 mMediaController.show();
+					}
+
+					if (mOnChangeListener != null) {
+						mOnChangeListener.onPrepared();
 					}
 	            } else {
 	                // We don't know the video size yet, but should start anyway.

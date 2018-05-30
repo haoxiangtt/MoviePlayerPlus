@@ -6,7 +6,7 @@ public interface OnChangeListener {
 	
 	void onPositionChanged(long progress);
 
-	void onLoadComplet();
+	void onPrepared();
 
 	void onError();
 

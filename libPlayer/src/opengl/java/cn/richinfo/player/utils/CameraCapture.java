@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * @author liyachao 296777513
  * @version 1.0
- * @date 2017/3/1
+ * date 2017/3/1
  */
 public class CameraCapture {
 

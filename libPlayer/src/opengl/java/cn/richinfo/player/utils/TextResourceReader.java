@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 /**
  * @author liyachao 296777513
  * @version 1.0
- * @date 2017/3/1
+ * date 2017/3/1
  */
 public class TextResourceReader {
     /**

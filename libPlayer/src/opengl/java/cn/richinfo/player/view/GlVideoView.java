@@ -35,14 +35,14 @@ import cn.richinfo.player.utils.GlUtil;
 
 /**
  * <pre>
- * @copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
- * @company    : XXXXXXXXXXXXXXXXX
+ * copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
+ * company    : XXXXXXXXXXXXXXXXX
  * @author     : OuyangJinfu
- * @e-mail     : jinfu123.-@163.com
- * @createDate : 2017/6/9 0009
- * @modifyDate : 2017/6/9 0009
+ * e-mail     : jinfu123.-@163.com
+ * createDate : 2017/6/9 0009
+ * modifyDate : 2017/6/9 0009
  * @version    : 1.0
- * @desc       : GlVideoView class使用OpenGL渲染视频的播放控件
+ * desc       : GlVideoView class使用OpenGL渲染视频的播放控件
  * 				can load images from various sources (such as resources or content
  * 				providers), takes care of computing its measurement from the video so that
  * 				it can be used in any layout manager, and provides various display options
@@ -135,6 +135,10 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 
 					if (mMediaController != null) {
 						 mMediaController.show();
+					}
+
+					if (mOnChangeListener != null) {
+						mOnChangeListener.onPrepared();
 					}
 
 	            } else {
@@ -762,12 +766,17 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 		// 清除屏幕和深度缓存
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 		// 更新纹理
-		synchronized (this) {
-			if (mUpdateSurface) {
+		/*if (mUpdateSurface) {
+			synchronized (this) {
 				mSurface.updateTexImage();
 				mSurface.getTransformMatrix(mDirectDrawer.mSTMatrix);
 				mUpdateSurface = false;
 			}
+		}*/
+		if (mUpdateSurface) {
+			mSurface.updateTexImage();
+			mSurface.getTransformMatrix(mDirectDrawer.mSTMatrix);
+			mUpdateSurface = false;
 		}
 		mDirectDrawer.draw();
 	}

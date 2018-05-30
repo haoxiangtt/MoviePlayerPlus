@@ -565,14 +565,12 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnClickLis
 			mHandler.sendEmptyMessage(HANDLE_SET_PROGRESS);
 		}*/
 	}
-	
-	
 
 	@Override
-	public void onLoadComplet() {
-		
-		
+	public void onPrepared() {
+
 	}
+
 
 	@Override
 	public void onError() {

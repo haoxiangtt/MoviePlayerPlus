@@ -28,14 +28,14 @@ import cn.richinfo.player.media.MediaPlayer;
 
 /**
  * <pre>
- * @copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
- * @company    : XXXXXXXXXXXXXXXXX
+ * copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXXXX
+ * company    : XXXXXXXXXXXXXXXXX
  * @author     : OuyangJinfu
- * @e-mail     : jinfu123.-@163.com
- * @createDate : 2017/6/9 0009
- * @modifyDate : 2017/6/9 0009
+ * e-mail     : jinfu123.-@163.com
+ * createDate : 2017/6/9 0009
+ * modifyDate : 2017/6/9 0009
  * @version    : 1.0
- * @desc       : vlc播放器控件
+ * desc       : vlc播放器控件
  * </pre>
  */
 public class VLCVideoView extends SurfaceView implements MediaPlayerController{
@@ -139,6 +139,10 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
 
                 if (mMediaController != null) {
                     mMediaController.show();
+                }
+
+                if (mOnChangeListener != null) {
+                    mOnChangeListener.onPrepared();
                 }
 //	                }
             } else {
