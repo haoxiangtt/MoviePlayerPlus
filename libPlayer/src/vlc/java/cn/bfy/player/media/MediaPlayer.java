@@ -20,7 +20,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-package cn.richinfo.player.media;
+package cn.bfy.player.media;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -51,7 +51,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.richinfo.player.BuildConfig;
+import cn.bfy.player.BuildConfig;
 
 /**
  * <pre>

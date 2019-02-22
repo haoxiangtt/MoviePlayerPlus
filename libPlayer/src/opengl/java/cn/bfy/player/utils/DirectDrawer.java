@@ -1,4 +1,4 @@
-package cn.richinfo.player.utils;
+package cn.bfy.player.utils;
 
 import android.content.Context;
 import android.opengl.GLES11Ext;
@@ -11,10 +11,10 @@ import java.nio.ShortBuffer;
 
 /**
  * <pre>
- * copyright  : Copyright ©2004-2018 版权所有　彩讯科技股份有限公司
- * company    : 彩讯科技股份有限公司
+ * copyright  : Copyright ©2004-2018 版权所有　XXXXXXXXXXXXXXX
+ * company    : XXXXXXXXXXXXXXX
  * @author     : OuyangJinfu
- * e-mail     : ouyangjinfu@richinfo.cn
+ * e-mail     : jinfu123.-@163.com
  * createDate : 2017/7/12 0012
  * modifyDate : 2017/7/12 0012
  * @version    : 1.0

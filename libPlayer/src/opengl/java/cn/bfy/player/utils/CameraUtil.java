@@ -1,4 +1,4 @@
-package cn.richinfo.player.utils;
+package cn.bfy.player.utils;
 
 import android.hardware.Camera;
 import android.util.Log;

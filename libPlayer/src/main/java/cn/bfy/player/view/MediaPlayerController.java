@@ -1,4 +1,4 @@
-package cn.richinfo.player.view;
+package cn.bfy.player.view;
 
 import android.net.Uri;
 

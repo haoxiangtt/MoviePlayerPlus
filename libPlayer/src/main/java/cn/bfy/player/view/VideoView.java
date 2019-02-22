@@ -1,22 +1,18 @@
-package cn.richinfo.player.view;
+package cn.bfy.player.view;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
-import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.opengl.GLES20;
-import android.opengl.GLSurfaceView;
-import android.opengl.Matrix;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
@@ -26,12 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
-import cn.richinfo.player.BuildConfig;
-import cn.richinfo.player.utils.DirectDrawer;
-import cn.richinfo.player.utils.GlUtil;
+import cn.bfy.player.BuildConfig;
 
 /**
  * <pre>
@@ -42,52 +33,53 @@ import cn.richinfo.player.utils.GlUtil;
  * createDate : 2017/6/9 0009
  * modifyDate : 2017/6/9 0009
  * @version    : 1.0
- * desc       : GlVideoView class使用OpenGL渲染视频的播放控件
+ * desc       : Displays a video file.  The VideoView class
  * 				can load images from various sources (such as resources or content
  * 				providers), takes care of computing its measurement from the video so that
  * 				it can be used in any layout manager, and provides various display options
  * 				such as scaling and tinting.
  * </pre>
  */
-public class GlVideoView extends GLSurfaceView implements MediaPlayerController
-		, GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener{
+public class VideoView extends SurfaceView implements MediaPlayerController{
 
 	private static final boolean DEBUG = BuildConfig.DEBUG;
     private static final String TAG = "VideoView";
 
     private Context mContext;
-	private Handler mHandler;
-	private ArrayList<String> mMediaList;
+    private ArrayList<String> mMediaList;
     private Uri         mCurrentUri;
     private int         mDuration;
     private int			mCurrentIndex;
+	private int			mPosition = -1;
 
+    // All the stuff we need for playing and showing a video
+    private SurfaceHolder mSurfaceHolder = null;
     private MediaPlayer mMediaPlayer = null;
     private MediaController mMediaController = null;
-
+    
     private boolean     mIsPrepared;
     private int         mVideoWidth;
     private int         mVideoHeight;
     private int         mSurfaceWidth;
     private int         mSurfaceHeight;
+//  private int         mCurrentBufferPercentage;
     private boolean     mStartWhenPrepared;
     private int         mSeekWhenPrepared;
 
     private OnChangeListener mOnChangeListener;
-	private int mTextureID;
-	private SurfaceTexture mSurface;
-	private DirectDrawer mDirectDrawer;
-	private boolean mUpdateSurface = false;
-
-	public GlVideoView(Context context) {
-	    this(context,null);
+    
+    public VideoView(Context context) {
+	    this(context,null,0);
 	}
 
-	public GlVideoView(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		mContext = context;
-		mHandler = new Handler();
-		initVideoView();
+	public VideoView(Context context, AttributeSet attrs) {
+	    this(context, attrs, 0);
+	}
+
+	public VideoView(Context context, AttributeSet attrs, int defStyle) {
+	    super(context, attrs, defStyle);
+	    mContext = context;
+	    initVideoView();
 	}
 
     
@@ -98,6 +90,14 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 	        	if(DEBUG) Log.i(TAG, "OnVideoSizeChanged.......................");
 	            mVideoWidth = mp.getVideoWidth();
 	            mVideoHeight = mp.getVideoHeight();
+	            
+	            /*if(mMyChangeLinstener!=null){
+	            	mMyChangeLinstener.doMyThings();
+	            }*/
+	            
+	            /*if (mVideoWidth != 0 && mVideoHeight != 0) {
+	                getHolder().setFixedSize(mVideoWidth, mVideoHeight);
+	            }*/
 	        }
 	};
 	
@@ -113,25 +113,25 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 	            mVideoWidth = mp.getVideoWidth();
 	            mVideoHeight = mp.getVideoHeight();
 	            if (mVideoWidth != 0 && mVideoHeight != 0) {
-	                if(DEBUG) Log.i(TAG, "video size: " + mVideoWidth +"/"+ mVideoHeight);
+	                if(DEBUG) {
+						Log.i(TAG, "video size: " + mVideoWidth + "/" + mVideoHeight);
+					}
 	                setVideoScale(SCREEN_FULL, SCALE_MODE_DEFAULT);
 //	                if (mSurfaceWidth == mVideoWidth && mSurfaceHeight == mVideoHeight) {
 	                    // We didn't actually change the size (it was already at the size
 	                    // we need), so we won't get a "surface changed" callback, so
 	                    // start the video here instead of in the callback.
-//	                	if(DEBUG) Log.i(TAG, " if mStartWhenPrepared : " + mStartWhenPrepared);
 
 				   if (mStartWhenPrepared) {
 						mMediaPlayer.start();
 						mStartWhenPrepared = false;
-					   stayAwake(true);
+
 					}
 
 					if (mSeekWhenPrepared != 0) {
 						mMediaPlayer.seekTo(mSeekWhenPrepared);
 						mSeekWhenPrepared = 0;
 					}
-
 
 					if (mMediaController != null) {
 						 mMediaController.show();
@@ -140,18 +140,16 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 					if (mOnChangeListener != null) {
 						mOnChangeListener.onPrepared();
 					}
-
 	            } else {
 	                // We don't know the video size yet, but should start anyway.
 	                // The video size might be reported to us later.
+	            	if(DEBUG) Log.i(TAG, " else mStartWhenPrepared : " + mStartWhenPrepared);
 
 	                if (mStartWhenPrepared) {
 	                    mMediaPlayer.start();
 	                    mStartWhenPrepared = false;
-						stayAwake(true);
 	                }
 
-					if(DEBUG) Log.i(TAG, " else mStartWhenPrepared : " + mStartWhenPrepared);
 					if (mSeekWhenPrepared != 0) {
 						mMediaPlayer.seekTo(mSeekWhenPrepared);
 						mSeekWhenPrepared = 0;
@@ -162,25 +160,29 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 					}
 
 	            }
-
+	            
+	            /*if (mOnPreparedListener != null) {
+	                mOnPreparedListener.onPrepared(mMediaPlayer);
+	            }*/
 	        }
 	    };
 	    
 	private MediaPlayer.OnCompletionListener mCompletionListener =
 	  new MediaPlayer.OnCompletionListener() {
 	    public void onCompletion(MediaPlayer mp) {
-			if (DEBUG) {
+			if(DEBUG) {
 				Log.i(TAG, "playing complete!!!!!!!!!!!!");
 			}
 	        if (mMediaController != null) {
 	            mMediaController.hide();
 	        }
-			stop();
-			//recordPosition(0);
-			if (mOnChangeListener != null) {
-				mOnChangeListener.onEnd();;
-			}
-		}
+
+	     	stop();
+	     	//recordPosition(0);
+	        if (mOnChangeListener != null) {
+	        	mOnChangeListener.onEnd();;
+	        }
+	    }
 	
 	};
 	
@@ -196,7 +198,6 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 	            if (mOnChangeListener != null) {
 	            	mOnChangeListener.onError();
 	            }
-				stayAwake(false);
 	            return true;
 	        }
 	    };
@@ -221,40 +222,61 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 				
 			}
 	};*/
-
+	    
+	
+	private SurfaceHolder.Callback mSHCallback = new SurfaceHolder.Callback(){
+		public void surfaceChanged(SurfaceHolder holder, int format,int w, int h){
+		    	if(DEBUG) Log.i(TAG, "serface change...width = " + w + "height = " + h );
+		        mSurfaceWidth = w;
+		        mSurfaceHeight = h;
+		    }
+		
+		public void surfaceCreated(SurfaceHolder holder){
+			if(DEBUG) Log.w(TAG, "the surfaceview Create!.......................");
+			mSurfaceHolder = holder;
+			openVideo();
+		}
+		
+		public void surfaceDestroyed(SurfaceHolder holder){
+			// after we return from this we can't use the surface any more
+		    mSurfaceHolder = null;
+			mSeekWhenPrepared = (int)getTime();
+			mIsPrepared = false;
+		    if(DEBUG)  Log.w(TAG, "the surfaceview destroy..............");
+		    if(mMediaController != null) mMediaController.hide();
+		    stop(); 
+		}
+	};
 
 
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+//	    int width = getDefaultSize(mVideoWidth, widthMeasureSpec);
+//	    int height = getDefaultSize(mVideoHeight, heightMeasureSpec);
+//	    setMeasuredDimension(width,height);
 	}
 
 	private void initVideoView() {
-		mVideoWidth = 0;
-		mVideoHeight = 0;
-
-		//一定要设置版本
-		setEGLContextClientVersion(2);
-		// 设置与当前GLSurfaceView绑定的Renderer
-		setRenderer(this);
-		// 设置渲染的模式
-		setRenderMode(RENDERMODE_WHEN_DIRTY);
-
-		setFocusable(true);
-		setFocusableInTouchMode(true);
-		requestFocus();
+	        mVideoWidth = 0;
+	        mVideoHeight = 0;
+	        getHolder().addCallback(mSHCallback);
+//	        getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+	        setFocusable(true);
+	        setFocusableInTouchMode(true);
+	        requestFocus();
 	}
 
 	private void initPlayer(){
 		 openVideo();
-//		 requestLayout();
-//		 invalidate();
+		 requestLayout();
+		 invalidate();
 	}
 
 	private void openVideo() {
 	
-	        if (mCurrentUri == null || mSurface == null) {
+	        if (mCurrentUri == null || mSurfaceHolder == null) {
 	            return;
 	        }
 	        if(DEBUG) Log.i(TAG, "Uri Scheme : " + mCurrentUri.getScheme()
@@ -280,19 +302,11 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 	            mMediaPlayer.setOnErrorListener(mErrorListener);
 	            mMediaPlayer.setOnBufferingUpdateListener(mBufferingUpdateListener);
 	            //mMediaPlayer.setOnTimedTextListener(null);
-				Surface surface = new Surface(mSurface);
-				mMediaPlayer.setSurface(surface);
-				surface.release();
-				mMediaPlayer.setDataSource(mContext, mCurrentUri);
-				mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+	            mMediaPlayer.setDataSource(mContext, mCurrentUri);
+	            mMediaPlayer.setDisplay(mSurfaceHolder);
+	            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 	            //mMediaPlayer.setVolume(1f, 1f);
-
-				/**
-				 * see{@link #stayAwake}
-				 * 使用Glsurfaceview渲染视频后这个方法不起作用
-				 */
 	            mMediaPlayer.setScreenOnWhilePlaying(true);
-
 	            mMediaPlayer.prepareAsync();
 	        } catch (IOException ex) {
 	            Log.w(TAG, "Unable to open content: " + mCurrentUri, ex);
@@ -301,10 +315,11 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 	    }
 
 	private void setScale(int width , int height){
-		LayoutParams lp = getLayoutParams();
-		lp.height = height;
-		lp.width = width;
-		setLayoutParams(lp);
+//			getHolder().setFixedSize(width, height);
+			LayoutParams lp = getLayoutParams();
+			lp.height = height;
+			lp.width = width;
+			setLayoutParams(lp);
 	}
 	
 	private int[] adjustScale(int cw,int ch,int vw,int vh){
@@ -320,14 +335,6 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
     	return scale;
     	
     }
-
-    private void stayAwake (boolean flag) {
-		if (flag) {
-			((Activity) mContext).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		} else {
-			((Activity)mContext).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		}
-	}
 
 	/*private void toggleMediaControlsVisiblity() {
 	    if (mMediaController.isShowing()) {
@@ -450,6 +457,9 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 
 	@Override
     public boolean onTouchEvent(MotionEvent ev) {
+        if (mIsPrepared && mMediaPlayer != null && mMediaController != null) {
+           // toggleMediaControlsVisiblity();
+        }
         return super.onTouchEvent(ev);
     }
 
@@ -471,7 +481,8 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
                 keyCode != KeyEvent.KEYCODE_MENU &&
                 keyCode != KeyEvent.KEYCODE_CALL &&
                 keyCode != KeyEvent.KEYCODE_ENDCALL &&
-                mMediaPlayer != null && mMediaController != null) {
+                mMediaPlayer != null &&
+                mMediaController != null) {
             if (keyCode == KeyEvent.KEYCODE_HEADSETHOOK ||
                     keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
                 if (mMediaPlayer.isPlaying()) {
@@ -501,6 +512,7 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 
 	@Override
     public void initPlayer(Uri uri) {
+//			LibVLC.getInstance().init(mContext);
 		mMediaList = new ArrayList<String>();
 		mCurrentUri = uri;
 		mCurrentIndex = 0;
@@ -538,9 +550,8 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 //    	Log.i(TAG, "start: mMediaplayer = " + mMediaPlayer);
         if (mMediaPlayer != null && mIsPrepared) {
         	//Log.i(TAG, " out start le..................");
-			mMediaPlayer.start();
-			mStartWhenPrepared = false;
-			stayAwake(true);
+                mMediaPlayer.start();
+                mStartWhenPrepared = false;
         } else {
             mStartWhenPrepared = true;
         }
@@ -550,7 +561,6 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 	public void play() {
 		if (mMediaPlayer != null && mIsPrepared) {
 			mMediaPlayer.start();
-			stayAwake(true);
 		}
 	}
 	
@@ -560,7 +570,6 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
         if (mMediaPlayer != null && mIsPrepared) {
             if (mMediaPlayer.isPlaying()) {
                 mMediaPlayer.pause();
-				stayAwake(false);
             }
         }
 //        mStartWhenPrepared = false;
@@ -574,7 +583,6 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 	    	//long t = getTime();
 	    	//recordPosition(t);
 	        mMediaPlayer.stop();
-			stayAwake(false);
 	    }
 	}
     
@@ -695,92 +703,6 @@ public class GlVideoView extends GLSurfaceView implements MediaPlayerController
 	public int getCurrentPlayIndex() {
 		return mCurrentIndex;
 	}
-
-
-
-	@Override
-	public void onPause() {
-		super.onPause();
-//		CameraCapture.get().doStopCamera();
-	}
-
-
-	@Override
-	public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-		if (DEBUG) {
-			Log.i(TAG, "onFrameAvailable...");
-		}
-		mUpdateSurface = true;
-		requestRender();
-	}
-
-	@Override
-	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		if (DEBUG) {
-			Log.i(TAG, "onSurfaceCreated...");
-		}
-		mTextureID = GlUtil.createTextureID();
-		mSurface = new SurfaceTexture(mTextureID);
-		mSurface.setOnFrameAvailableListener(this);
-		mDirectDrawer = new DirectDrawer(mContext, mTextureID);
-//		CameraCapture.get().openBackCamera();
-		//尽量还是在ui线程中执行，GlThread线程总会出些毛病
-		mHandler.post(new Runnable() {
-			@Override
-			public void run() {
-				openVideo();
-			}
-		});
-	}
-
-
-	@Override
-	public void onSurfaceChanged(GL10 gl, int width, int height) {
-		if (DEBUG) {
-			Log.i(TAG, "onSurfaceChanged...");
-		}
-		mSurfaceWidth = width;
-		mSurfaceHeight = height;
-		// 设置OpenGL场景的大小,(0,0)表示窗口内部视口的左下角，(w,h)指定了视口的大小
-//		if (!CameraCapture.get().isPreviewing()) {
-//			CameraCapture.get().doStartPreview(mSurface);
-//		}
-		//下列代码意义为使绘制区域适应视频尺寸, 我们这里统一设置成占满整个控件, 尺寸的调整交给setVideoScale方法
-		float screenRatio=width*1f/height;//屏幕宽高比
-		float videoRatio=width*1f/height;//视频宽高比
-		if (videoRatio>screenRatio){
-			Matrix.orthoM(mDirectDrawer.mMVP,0,-1f,1f,-videoRatio/screenRatio,videoRatio/screenRatio,-1f,1f);
-		}else {
-			Matrix.orthoM(mDirectDrawer.mMVP,0,-screenRatio/videoRatio,screenRatio/videoRatio,-1f,1f,-1f,1f);
-		}
-        GLES20.glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
-	}
-
-	@Override
-	public void onDrawFrame(GL10 gl) {
-		if (DEBUG) {
-			Log.i(TAG, "onDrawFrame...");
-		}
-		// 设置白色为清屏
-		GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		// 清除屏幕和深度缓存
-		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-		// 更新纹理
-		/*if (mUpdateSurface) {
-			synchronized (this) {
-				mSurface.updateTexImage();
-				mSurface.getTransformMatrix(mDirectDrawer.mSTMatrix);
-				mUpdateSurface = false;
-			}
-		}*/
-		if (mUpdateSurface) {
-			mSurface.updateTexImage();
-			mSurface.getTransformMatrix(mDirectDrawer.mSTMatrix);
-			mUpdateSurface = false;
-		}
-		mDirectDrawer.draw();
-	}
-
 
 
 }

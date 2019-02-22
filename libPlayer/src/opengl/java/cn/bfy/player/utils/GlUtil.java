@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.richinfo.player.utils;
+package cn.bfy.player.utils;
 
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;

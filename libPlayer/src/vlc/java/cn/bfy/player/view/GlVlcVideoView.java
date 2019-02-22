@@ -1,19 +1,21 @@
-package cn.richinfo.player.view;
+package cn.bfy.player.view;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
+import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.os.Build;
+import android.opengl.GLES20;
+import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -23,8 +25,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import cn.richinfo.player.BuildConfig;
-import cn.richinfo.player.media.MediaPlayer;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+import cn.bfy.player.BuildConfig;
+import cn.bfy.player.media.MediaPlayer;
+import cn.bfy.player.utils.DirectDrawer;
+import cn.bfy.player.utils.GlUtil;
 
 /**
  * <pre>
@@ -35,23 +42,24 @@ import cn.richinfo.player.media.MediaPlayer;
  * createDate : 2017/6/9 0009
  * modifyDate : 2017/6/9 0009
  * @version    : 1.0
- * desc       : vlc播放器控件
+ * desc       : 使用OpenGL渲染视频的vlc播放控件
  * </pre>
  */
-public class VLCVideoView extends SurfaceView implements MediaPlayerController{
+public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerController
+        , GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener{
 
     private static final boolean DEBUG = BuildConfig.DEBUG;
     private static final String TAG = "VideoView";
     //  private static final String RECORD_POINT = "RECORD_POINT_DATA";
 
     private Context mContext;
+    private Handler mHandler;
     private ArrayList<String> mMediaList;
     private Uri mCurrentUri;
     private int         mDuration;
     private int			mCurrentIndex;
 
     // All the stuff we need for playing and showing a video
-    private SurfaceHolder mSurfaceHolder = null;
     private MediaPlayer mMediaPlayer = null;
     private MediaController mMediaController;
 
@@ -60,32 +68,24 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
     private int         mVideoHeight;
     private int         mSurfaceWidth;
     private int         mSurfaceHeight;
-    //  private int         mCurrentBufferPercentage;
     private boolean     mStartWhenPrepared;
     private int         mSeekWhenPrepared;
 
     private OnChangeListener mOnChangeListener;
+    private boolean mUpdateSurface;
+    private int mTextureID;
+    private SurfaceTexture mSurface;
+    private DirectDrawer mDirectDrawer;
 
 
-    public VLCVideoView(Context context) {
-        this(context, null, 0);
+    public GlVlcVideoView(Context context) {
+        this(context, null);
     }
 
-    public VLCVideoView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-
-    }
-
-    public VLCVideoView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+    public GlVlcVideoView(Context context, AttributeSet attrs) {
+        super(context, attrs);
         mContext = context;
-        initVideoView();
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public VLCVideoView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        mContext = context;
+        mHandler = new Handler();
         initVideoView();
     }
 
@@ -95,14 +95,6 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
                     if(DEBUG) Log.i(TAG, "OnVideoSizeChanged.......................");
                     mVideoWidth = mp.getVideoWidth();
                     mVideoHeight = mp.getVideoHeight();
-
-                    /*if(mMyChangeLinstener!=null){
-                        mMyChangeLinstener.doMyThings();
-                    }*/
-
-                    /*if (mVideoWidth > 0 && mVideoHeight > 0) {
-                        getHolder().setFixedSize(mVideoWidth, mVideoHeight);
-                    }*/
                 }
             };
 
@@ -161,10 +153,6 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
                 }
 
             }
-
-	            /*if (mOnPreparedListener != null) {
-	                mOnPreparedListener.onPrepared(mMediaPlayer);
-	            }*/
         }
     };
 
@@ -222,36 +210,6 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
 	};*/
 
 
-    private SurfaceHolder.Callback mSHCallback = new SurfaceHolder.Callback(){
-
-        @Override
-        public void surfaceChanged(SurfaceHolder holder, int format, int w, int h){
-            if(DEBUG) Log.i(TAG, "serface change...width = " + w + "height = " + h );
-            mSurfaceWidth = w;
-            mSurfaceHeight = h;
-        }
-
-        @Override
-        public void surfaceCreated(SurfaceHolder holder){
-            if(DEBUG) Log.i(TAG, "callback Create!.......................");
-            mSurfaceHolder = holder;
-            openVideo();
-        }
-
-        @Override
-        public void surfaceDestroyed(SurfaceHolder holder){
-            // after we return from this we can't use the surface any more
-            mSurfaceHolder = null;
-            mSeekWhenPrepared = (int)getTime();
-            mIsPrepared = false;
-            if(DEBUG)  Log.w(TAG, "the surface destroy..............");
-            if(mMediaController != null) mMediaController.hide();
-
-            stop();
-        }
-    };
-
-
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -264,8 +222,14 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
     private void initVideoView() {
         mVideoWidth = 0;
         mVideoHeight = 0;
-        getHolder().addCallback(mSHCallback);
-//	        getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+        //一定要设置版本
+        setEGLContextClientVersion(2);
+
+        setRenderer(this);
+        // 设置渲染的模式
+        setRenderMode(RENDERMODE_WHEN_DIRTY);
+
         setFocusable(true);
         setFocusableInTouchMode(true);
         requestFocus();
@@ -273,13 +237,13 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
 
     private void initPlayer(){
         openVideo();
-        requestLayout();
-        invalidate();
+//        requestLayout();
+//        invalidate();
     }
 
     private void openVideo() {
 
-        if (mCurrentUri == null || mSurfaceHolder == null) {
+        if (mCurrentUri == null || mSurface == null) {
             return;
         }
         if(DEBUG) Log.i(TAG, "Uri Scheme : " + mCurrentUri.getScheme()
@@ -306,8 +270,10 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
             mMediaPlayer.setOnBufferingUpdateListener(mBufferingUpdateListener);
             //mMediaPlayer.setOnTimedTextListener(null);
             mMediaPlayer.setDataSource(mContext, mCurrentUri);
-            mMediaPlayer.setSurfaceView(this);
 
+            Surface surface = new Surface(mSurface);
+            mMediaPlayer.setSurface(surface, getHolder());
+//            surface.release();//用vlc播放这一句不能加，不知道为什么
 
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             //mMediaPlayer.setVolume(1f, 1f);
@@ -581,9 +547,9 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
         if(DEBUG) Log.i(TAG, "enter Stop method:"+mMediaPlayer);
         if (mMediaPlayer != null && mIsPrepared) {
             if(DEBUG) Log.i(TAG, "stop media play................");
-            if (mMediaPlayer.isPlaying()) {
-                mMediaPlayer.stop();
-            }
+            //long t = getTime();
+            //recordPosition(t);
+            mMediaPlayer.stop();
         }
     }
 
@@ -707,5 +673,93 @@ public class VLCVideoView extends SurfaceView implements MediaPlayerController{
     public int getCurrentPlayIndex() {
         return mCurrentIndex;
     }
+
+
+
+    @Override
+    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+        if (DEBUG) {
+            Log.i(TAG, "onFrameAvailable...");
+        }
+
+        mUpdateSurface = true;
+        requestRender();
+    }
+
+    @Override
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        if (DEBUG) {
+            Log.i(TAG, "onSurfaceCreated...");
+        }
+        mTextureID = GlUtil.createTextureID();
+        mSurface = new SurfaceTexture(mTextureID);
+        mSurface.setOnFrameAvailableListener(this);
+        mDirectDrawer = new DirectDrawer(mContext, mTextureID);
+//		CameraCapture.get().openBackCamera();
+        /*
+         *用vlc播放器时，不知道为什么在调整屏幕尺寸时不能在GLThread线程中执行,
+        */
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                openVideo();
+            }
+        });
+
+    }
+
+
+    @Override
+    public void onSurfaceChanged(GL10 gl, int width, int height) {
+        if (DEBUG) {
+            Log.i(TAG, "onSurfaceChanged...");
+        }
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
+        // 设置OpenGL场景的大小,(0,0)表示窗口内部视口的左下角，(w,h)指定了视口的大小
+//		if (!CameraCapture.get().isPreviewing()) {
+//			CameraCapture.get().doStartPreview(mSurface);
+//		}
+        //下列代码意义为使绘制区域适应视频尺寸, 我们这里统一设置成占满整个控件, 尺寸的调整交给setVideoScale方法
+        float screenRatio=width*1f/height;//屏幕宽高比
+        float videoRatio=width*1f/height;//视频宽高比
+        if (videoRatio>screenRatio){
+            Matrix.orthoM(mDirectDrawer.mMVP,0,-1f,1f,-videoRatio/screenRatio,videoRatio/screenRatio,-1f,1f);
+        }else {
+            Matrix.orthoM(mDirectDrawer.mMVP, 0, -screenRatio / videoRatio, screenRatio / videoRatio, -1f, 1f, -1f, 1f);
+        }
+        GLES20.glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
+        if (mMediaPlayer != null) {
+            mMediaPlayer.setSurface(new Surface(mSurface), getHolder());
+        }
+    }
+
+    @Override
+    public void onDrawFrame(GL10 gl) {
+        if (DEBUG) {
+            Log.i(TAG, "onDrawFrame...");
+        }
+        // 设置白色为清屏
+        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        // 清除屏幕和深度缓存
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        // 更新纹理
+        /*synchronized (this) {
+            if (mUpdateSurface) {
+                mSurface.updateTexImage();
+                mSurface.getTransformMatrix(mDirectDrawer.mSTMatrix);
+                mUpdateSurface = false;
+            }
+        }*/
+        if (mUpdateSurface) {
+            mSurface.updateTexImage();
+            mSurface.getTransformMatrix(mDirectDrawer.mSTMatrix);
+            mUpdateSurface = false;
+        }
+        mDirectDrawer.draw();
+    }
+
+
+
 
 }

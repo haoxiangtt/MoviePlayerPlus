@@ -39,8 +39,8 @@ import com.bfy.movieplayerplus.utils.LogUtils;
 import java.util.ArrayList;
 import java.util.Date;
 
-import cn.richinfo.player.view.MediaPlayerController;
-import cn.richinfo.player.view.OnChangeListener;
+import cn.bfy.player.view.MediaPlayerController;
+import cn.bfy.player.view.OnChangeListener;
 
 
 public class VideoPlayerActivity extends AppCompatActivity implements OnClickListener,Callback,

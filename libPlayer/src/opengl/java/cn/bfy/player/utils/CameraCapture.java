@@ -1,4 +1,4 @@
-package cn.richinfo.player.utils;
+package cn.bfy.player.utils;
 
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
