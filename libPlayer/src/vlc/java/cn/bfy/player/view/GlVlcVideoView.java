@@ -348,7 +348,7 @@ public class GlVlcVideoView extends GLSurfaceView implements MediaPlayerControll
         switch(flag){
             case SCREEN_FULL: {
                 ((Activity) mContext).getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                ((Activity) mContext).getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE | View.GONE);
+                ((Activity) mContext).getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | 0x00000004);
 //				setScale(r.width(), r.height());
                 break;
             }
