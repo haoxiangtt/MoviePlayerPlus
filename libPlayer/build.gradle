@@ -105,13 +105,15 @@ android.libraryVariants.all { variant ->
             dependsOn : [deleteBuild, variant.assemble],
             type : Jar) {
 //        def zfile = file("build/intermediates/bundles/${variant.name}/classes.jar")
+        System.out.println(">>>>>>${variant.productFlavors.name[0]}")
+        System.out.println(">>>>>>${variant.buildType.name}")
         from "build/intermediates/classes/${variant.productFlavors.name[0]}/${variant.buildType.name}"
         baseName finalName
         destinationDir file(sdkDestinationPath)
         exclude "android/support/**/*.class"
         exclude "**/R.class"
         exclude "**/R\$*.class"
-        include "cn/richinfo/player/**/*.class"
+        include "cn/bfy/player/**/*.class"
     }
 }
 

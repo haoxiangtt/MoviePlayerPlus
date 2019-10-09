@@ -64,7 +64,7 @@ dependencies {
 //    debugCompile 'com.square up.leakcanary:leakcanary-android:1.5.1'
 //    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
     compile 'de.mrmaffen:vlc-android-sdk:3.0.0'
-//    compile files('libs/media_player_sdk-1.2.0-debug.jar')
-    compile project(path: ':libPlayer', configuration: 'vlcDebug')
+    compile files('libs/media_player_sdk-1.2.0-release.jar')
+//    compile project(path: ':libPlayer', configuration: 'vlcDebug')
 //    compile 'com.bfy:movie-player-plus:1.0.0'
 }
