@@ -26,3 +26,4 @@
     player.start();//开始播放
 
 作者：ouyangjinfu
+注：该项目2019年起已经停止维护
